@@ -3,9 +3,7 @@ import 'complaint_electrician_mritteka.dart';
 import 'priority_mritteka.dart';
 import 'notification_mritteka.dart';
 import 'history_mritteka.dart';
-    // Adjust the path as per your project structure
-
-// Other pages remain the same...
+import 'log_in_team_mritteka.dart';
 
 class TeamDashboardMritteka extends StatelessWidget {
   const TeamDashboardMritteka({super.key});
@@ -15,7 +13,7 @@ class TeamDashboardMritteka extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Electrician Admin Panel',
+          'Admin DashBoard for Electrician',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
@@ -25,11 +23,72 @@ class TeamDashboardMritteka extends StatelessWidget {
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Log Out',
             onPressed: () {
-              Navigator.pop(context); // Or navigate to login page
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LogInTeamMritteka()),
+              );
             },
           ),
         ],
       ),
+
+
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.deepPurple),
+
+                child: Text(
+                  'Fix It Now',
+                  style: TextStyle(color: Colors.white, fontSize: 24),
+                ),
+              
+            ),
+            ListTile(
+              leading: const Icon(Icons.report_problem),
+              title: const Text('Complaint'),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ComplaintElectricianMritteka()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.warning),
+              title: const Text('Priority Complaint'),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PriorityComplaintPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notification'),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('History'),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryPage()));
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LogInTeamMritteka()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+
+      // Your original grid view stays unchanged
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: GridView.count(
@@ -42,7 +101,7 @@ class TeamDashboardMritteka extends StatelessWidget {
               'Complaint',
               Icons.report_problem,
               Colors.orange,
-              const ComplaintElectricianMritteka(),  // Use the imported page here
+              const ComplaintElectricianMritteka(),
             ),
             _buildGridItem(
               context,

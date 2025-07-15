@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'team_dashboard_mritteka.dart'; // Import the target page
-
+import 'registration.dart';
 class LogInTeamMritteka extends StatelessWidget {
   const LogInTeamMritteka({super.key});
 
@@ -56,7 +56,7 @@ class LogInTeamMritteka extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Password Field
+
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -83,7 +83,7 @@ class LogInTeamMritteka extends StatelessWidget {
                 ),
               ),
 
-              // Forgot Password
+
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -97,7 +97,7 @@ class LogInTeamMritteka extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // Login Button
+
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -123,7 +123,7 @@ class LogInTeamMritteka extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              // OR Divider
+
               Row(
                 children: const [
                   Expanded(child: Divider(thickness: 1)),
@@ -142,7 +142,15 @@ class LogInTeamMritteka extends StatelessWidget {
                 width: double.infinity,
                 height: 48,
                 child: OutlinedButton(
-                  onPressed: () {},
+
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RegistrationPageMritteka()),
+                      );
+                    },
+
+
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.deepPurple),
                     shape: RoundedRectangleBorder(
