@@ -1,14 +1,17 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'MyComplaintsScreen.dart';
 import 'file_complaint_screen.dart';
-import 'MyProfileScreen.dart';
 import 'announcement_screen.dart';
 import 'complaint_stats_screen.dart';
 import 'about_us.dart';
 import 'contact_us.dart';
 import 'login_screen.dart';
+import 'notifications_screen.dart';
+import 'MyProfileScreen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -20,6 +23,10 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String? userName;
 
+  final Color backgroundColor = const Color(0xFFF8F4F0);
+  final Color accentColor = const Color(0xFFA67C52);
+  final Color cardTextColor = const Color(0xFF6B5E5E);
+
   @override
   void initState() {
     super.initState();
@@ -29,7 +36,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _fetchUserName() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-
     final doc = await FirebaseFirestore.instance
         .collection('user')
         .doc(uid)
@@ -42,113 +48,234 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _signOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Logout Confirmation"),
+        content: const Text("Do you really want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerTile(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: accentColor),
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.w500,
+          color: cardTextColor,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildGlassCard(
+    String title,
+    IconData icon,
+    String heroTag,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Hero(
+        tag: heroTag,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: const Color(0xFF8B5E3C).withOpacity(0.35),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.brown.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: 36, color: accentColor),
+                    const SizedBox(height: 12),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: cardTextColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
+      backgroundColor: backgroundColor,
       drawer: Drawer(
+        backgroundColor: Colors.white,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.pink),
+            DrawerHeader(
+              decoration: BoxDecoration(color: accentColor),
               child: Text(
                 'FixItNow Menu',
-                style: TextStyle(color: Colors.white, fontSize: 20),
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.contact_support),
-              title: const Text('Contact Us'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ContactUsScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('About Us'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AboutUsScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Sign Out'),
-              onTap: () => _signOut(context),
-            ),
+            _drawerTile(Icons.home, 'Home', () => Navigator.pop(context)),
+            _drawerTile(Icons.person, 'My Profile', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyProfileScreen()),
+              );
+            }),
+            _drawerTile(Icons.info_outline, 'About Us', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+              );
+            }),
+            _drawerTile(Icons.contact_support, 'Contact Us', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+              );
+            }),
+            _drawerTile(Icons.logout, 'Logout', _confirmLogout),
           ],
         ),
       ),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: backgroundColor,
+        iconTheme: IconThemeData(color: accentColor),
+        centerTitle: true,
+        title: Text(
+          'Dashboard',
+          style: GoogleFonts.poppins(
+            color: cardTextColor,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          IconButton(icon: const Icon(Icons.logout), onPressed: _confirmLogout),
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hi, 👋 ${userName ?? ''}',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              'Hi 👋 ${userName ?? ''}',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: accentColor,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Text(
+              'Welcome back! What do you want to do today?',
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+            ),
+            const SizedBox(height: 20),
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
                 children: [
-                  _buildCard("My Complaints", Icons.report, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MyComplaintsScreen(),
-                      ),
-                    );
-                  }, Colors.purple),
-                  _buildCard("File Complaint", Icons.edit, () {
+                  _buildGlassCard(
+                    "My Complaints",
+                    Icons.report,
+                    "complaints",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MyComplaintsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildGlassCard("File Complaint", Icons.edit, "file", () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => const FileComplaintScreen(),
                       ),
                     );
-                  }, Colors.pink),
-                  _buildCard("Announcements", Icons.announcement, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AnnouncementScreen(),
-                      ),
-                    );
-                  }, Colors.orange),
-                  _buildCard("My Profile", Icons.person, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MyProfileScreen(),
-                      ),
-                    );
-                  }, Colors.teal),
-                  _buildCard(
+                  }),
+                  _buildGlassCard(
+                    "Announcements",
+                    Icons.announcement,
+                    "announcements",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AnnouncementScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildGlassCard(
                     "Complaint Stats",
                     Icons.bar_chart,
+                    "stats",
                     () {
                       Navigator.push(
                         context,
@@ -157,55 +284,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       );
                     },
-                    const Color.fromARGB(255, 48, 191, 235),
+                  ),
+                  _buildGlassCard(
+                    "Notifications",
+                    Icons.notifications,
+                    "notif",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => NotificationsScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCard(
-    String title,
-    IconData icon,
-    VoidCallback onTap,
-    Color color,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 4,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [color.withOpacity(0.6), color],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: 40, color: Colors.white),
-                const SizedBox(height: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

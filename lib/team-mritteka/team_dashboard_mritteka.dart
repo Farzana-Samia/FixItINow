@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'complaint_electrician_mritteka.dart';
-import 'priority_mritteka.dart';
+
+import 'announcement-team-page.dart';
 import 'notification_mritteka.dart';
-import 'history_mritteka.dart';
+import 'project-team-stats.dart';
 import 'log_in_team_mritteka.dart';
+
 
 class TeamDashboardMritteka extends StatelessWidget {
   const TeamDashboardMritteka({super.key});
@@ -54,23 +56,29 @@ class TeamDashboardMritteka extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.warning),
-              title: const Text('Priority Complaint'),
+
+              title: const Text('Announcements'),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const PriorityComplaintPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementPage()));
+
               },
             ),
             ListTile(
               leading: const Icon(Icons.notifications),
-              title: const Text('Notification'),
+ 
+              title: const Text('Notifications'),
+
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationPage()));
               },
             ),
             ListTile(
               leading: const Icon(Icons.history),
-              title: const Text('History'),
+
+              title: const Text('Complaint History'),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProjectorTeamStatsPage()));
+
               },
             ),
             const Divider(),
@@ -88,7 +96,7 @@ class TeamDashboardMritteka extends StatelessWidget {
         ),
       ),
 
-      // Your original grid view stays unchanged
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: GridView.count(
@@ -105,24 +113,26 @@ class TeamDashboardMritteka extends StatelessWidget {
             ),
             _buildGridItem(
               context,
-              'Priority Complaint',
+              ' Announcements',
               Icons.warning_amber,
               Colors.redAccent,
-              const PriorityComplaintPage(),
+              const AnnouncementPage(),
             ),
             _buildGridItem(
               context,
-              'Notification',
+              'Notifications',
+
               Icons.notifications,
               Colors.blue,
               const NotificationPage(),
             ),
             _buildGridItem(
               context,
-              'History',
+              'Complaint History',
               Icons.history,
               Colors.green,
-              const HistoryPage(),
+              const ProjectorTeamStatsPage(),
+
             ),
           ],
         ),

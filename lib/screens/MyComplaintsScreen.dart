@@ -3,178 +3,251 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MyComplaintsScreen extends StatefulWidget {
-  const MyComplaintsScreen({super.key});
+  const MyComplaintsScreen({Key? key}) : super(key: key);
 
   @override
   State<MyComplaintsScreen> createState() => _MyComplaintsScreenState();
 }
 
 class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
-  String? mistRoll;
-  List<Map<String, dynamic>> crComplaints = [];
-  List<Map<String, dynamic>> guestLinkedComplaints = [];
+  List<DocumentSnapshot> crComplaints = [];
+  List<DocumentSnapshot> guestComplaints = [];
+  bool isLoading = true;
+  String? currentMistRoll;
 
   @override
   void initState() {
     super.initState();
-    fetchAllComplaints();
+    fetchComplaints();
   }
 
-  Future<void> fetchAllComplaints() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+  Future<void> fetchComplaints() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-      final userDoc = await FirebaseFirestore.instance
-          .collection('user')
-          .doc(user.uid)
-          .get();
-      mistRoll = userDoc.data()?['mist_roll'];
+    final crSnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .where('email', isEqualTo: user.email)
+        .where('userType', isEqualTo: 'cr')
+        .get();
 
-      if (mistRoll == null) return;
-
-      // Fetch CR's own complaints
-      final crSnapshot = await FirebaseFirestore.instance
-          .collection('cr_complaints')
-          .where('mist_roll', isEqualTo: mistRoll)
-          .orderBy('submitted_at', descending: true)
-          .get();
-
-      // Fetch guest complaints linked to this CR
-      final guestSnapshot = await FirebaseFirestore.instance
-          .collection('guest_complaints')
-          .where('linked_cr_roll', isEqualTo: mistRoll)
-          .orderBy('submitted_at', descending: true)
-          .get();
-      print("Mist Roll: $mistRoll");
-      print("CR Complaints Found: ${crSnapshot.docs.length}");
-      print("Guest Complaints Found: ${guestSnapshot.docs.length}");
-
-      for (var doc in crSnapshot.docs) {
-        print("CR complaint: ${doc.data()}");
-      }
-      for (var doc in guestSnapshot.docs) {
-        print("Guest complaint: ${doc.data()}");
-      }
-
-      setState(() {
-        crComplaints = crSnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
-        guestLinkedComplaints = guestSnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
-      });
-    } catch (e) {
-      print("Error fetching complaints: $e");
+    if (crSnapshot.docs.isEmpty) {
+      setState(() => isLoading = false);
+      return;
     }
+
+    currentMistRoll = crSnapshot.docs.first['mist_roll'];
+
+    final crComplaintSnapshot = await FirebaseFirestore.instance
+        .collection('cr_complaints')
+        .where('mist_roll', isEqualTo: currentMistRoll)
+        .get();
+
+    final guestComplaintSnapshot = await FirebaseFirestore.instance
+        .collection('guest_complaints')
+        .where('linked_cr_roll', isEqualTo: currentMistRoll)
+        .get();
+
+    setState(() {
+      crComplaints = crComplaintSnapshot.docs;
+      guestComplaints = guestComplaintSnapshot.docs;
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Complaints"),
-        backgroundColor: Colors.pink[700],
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: const Text('My Complaints'),
+        backgroundColor: const Color(0xFF8B5E3C),
       ),
-      body: crComplaints.isEmpty && guestLinkedComplaints.isEmpty
-          ? const Center(child: Text("No complaints found."))
-          : ListView(
-              padding: const EdgeInsets.all(12),
-              children: [
-                if (crComplaints.isNotEmpty)
-                  _buildSection("My Complaints", crComplaints),
-                if (guestLinkedComplaints.isNotEmpty)
-                  _buildSection(
-                    "Guest Complaints (Linked)",
-                    guestLinkedComplaints,
-                    isGuest: true,
-                  ),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildSection(
-    String title,
-    List<Map<String, dynamic>> complaints, {
-    bool isGuest = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "$title (${complaints.length})",
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        ...complaints.map((data) {
-          final complaintId = data['complaint_id'] ?? 'Unknown';
-          final description = data['description'] ?? '';
-          final location = data['room_location'] ?? 'No location';
-          final type = data['problem_type'] ?? 'No type';
-          final status = data['status'] ?? 'Pending';
-          final priority = data['priority'] == true;
-          final assignedTeam = (data['assignedTeam'] ?? '').toString();
-          final submittedAt = (data['submitted_at'] as Timestamp?)?.toDate();
-          final completedAt = (data['completed_at'] as Timestamp?)?.toDate();
-
-          Color cardColor = Colors.white;
-          if (status == 'Completed') {
-            cardColor = Colors.green[100]!;
-          } else if (assignedTeam.isNotEmpty) {
-            cardColor = Colors.blue[100]!;
-          }
-
-          return Card(
-            color: cardColor,
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: ListTile(
-              title: Text(
-                "Complaint ID: $complaintId",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Column(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Problem Details"),
-                  Text(description),
-                  const SizedBox(height: 4),
-                  Text("Type: $type"),
-                  Text("Location: $location"),
-                  Text("Status: $status"),
-                  if (priority)
-                    const Text(
-                      "⚠️ Priority Complaint",
-                      style: TextStyle(color: Colors.red),
+                  Text(
+                    'My Complaints (${crComplaints.length})',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                  if (assignedTeam.isNotEmpty)
+                  ),
+                  const SizedBox(height: 8),
+                  ...crComplaints.map(
+                    (doc) =>
+                        ComplaintCard(data: doc.data() as Map<String, dynamic>),
+                  ),
+                  if (guestComplaints.isNotEmpty) ...[
+                    const SizedBox(height: 24),
                     Text(
-                      "✅ Assigned to: $assignedTeam",
-                      style: const TextStyle(color: Colors.blue),
+                      'Guest Complaints (Linked) (${guestComplaints.length})',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  if (completedAt != null)
-                    Text(
-                      "✅ Completed on: ${completedAt.toString().split('.').first}",
+                    const SizedBox(height: 8),
+                    ...guestComplaints.map(
+                      (doc) => GuestComplaintCard(
+                        data: doc.data() as Map<String, dynamic>,
+                      ),
                     ),
-                  if (submittedAt != null)
-                    Text(
-                      "🕒 Submitted on: ${submittedAt.toString().split('.').first}",
-                    ),
+                  ],
                 ],
               ),
             ),
-          );
-        }),
-        const SizedBox(height: 20),
+    );
+  }
+}
+
+class ComplaintCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const ComplaintCard({super.key, required this.data});
+
+  Widget _buildStatusBadge(String status) {
+    String icon = 'submitted.png';
+    Color color = Colors.yellow;
+
+    if (status == 'Assigned') {
+      icon = 'assigned.png';
+      color = Colors.blue;
+    } else if (status == 'Ongoing') {
+      icon = 'ongoing.png';
+      color = Colors.orange;
+    } else if (status == 'Completed') {
+      icon = 'completed.png';
+      color = Colors.green;
+    } else if (status == 'Pending') {
+      icon = 'pending.png';
+      color = Colors.yellow;
+    }
+
+    return Row(
+      children: [
+        Image.asset('assets/images/$icon', height: 18, width: 18),
+        const SizedBox(width: 4),
+        Text(
+          status,
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        ),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status = data['status'] ?? 'Pending';
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: const Color(0xFFF8F4F0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  "Complaint ID: ${data['complaint_id'] ?? 'N/A'}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                _buildStatusBadge(status),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(data['description'] ?? ''),
+            const SizedBox(height: 6),
+            Text("📍 Location: ${data['location'] ?? ''}"),
+            Text("🛠️ Type: ${data['problem_type'] ?? ''}"),
+            if (data['priority'] == true)
+              const Text("⚠️ Priority", style: TextStyle(color: Colors.red)),
+            Text(
+              "✅ Assigned to: ${data['assignedTeam'] ?? 'Not assigned'}",
+              style: const TextStyle(color: Colors.blue),
+            ),
+            Text("🕒 Submitted: ${data['timestamp'] ?? ''}"),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class GuestComplaintCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const GuestComplaintCard({super.key, required this.data});
+
+  Widget _buildStatusBadge(String status) {
+    String icon = 'submitted.png';
+    Color color = Colors.yellow;
+
+    if (status == 'Assigned') {
+      icon = 'assigned.png';
+      color = Colors.blue;
+    } else if (status == 'Ongoing') {
+      icon = 'ongoing.png';
+      color = Colors.orange;
+    } else if (status == 'Completed') {
+      icon = 'completed.png';
+      color = Colors.green;
+    } else if (status == 'Pending') {
+      icon = 'pending.png';
+      color = Colors.yellow;
+    }
+
+    return Row(
+      children: [
+        Image.asset('assets/images/$icon', height: 18, width: 18),
+        const SizedBox(width: 4),
+        Text(
+          status,
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status = data['status'] ?? 'Pending';
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: const Color(0xFFF8F4F0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  "Complaint ID: ${data['complaint_id'] ?? 'N/A'}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                _buildStatusBadge(status),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(data['description'] ?? ''),
+            const SizedBox(height: 6),
+            Text("📍 Location: ${data['location'] ?? ''}"),
+            Text("🛠️ Type: ${data['problem_type'] ?? ''}"),
+            Text("🕒 Submitted: ${data['timestamp'] ?? ''}"),
+          ],
+        ),
+      ),
     );
   }
 }
