@@ -120,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("CR Registration"),
-        backgroundColor: Colors.pink[700],
+        backgroundColor: const Color(0xFF8B5E3C),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -139,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink,
+                  backgroundColor: const Color(0xFF8B5E3C),
                   padding: const EdgeInsets.symmetric(
                     vertical: 14,
                     horizontal: 32,
@@ -147,7 +147,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 onPressed: _loading ? null : _submitForm,
                 child: _loading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator(color:Color(0xFFF8F4F0),)
                     : const Text("Register"),
               ),
             ],

@@ -14,14 +14,19 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
   String name = '';
   String email = '';
-  String roll = '';
+  String mistRoll = '';
   String department = '';
   String level = '';
   String section = '';
   String mobile = '';
   String userType = '';
-
   bool _loading = true;
+
+  // Local theme toggle
+  bool _isDarkTheme = false;
+
+  final Color creamWhite = const Color(0xFFF8F4F0);
+  final Color chocolateBrown = const Color(0xFF8B5E3C);
 
   @override
   void initState() {
@@ -38,13 +43,12 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
           .collection('user')
           .doc(user.uid)
           .get();
-
       final data = doc.data();
       if (data != null) {
         setState(() {
           name = data['name'] ?? '';
-          email = user.email ?? '';
-          roll = data['roll'] ?? '';
+          email = data['email'] ?? '';
+          mistRoll = data['mist_roll'] ?? '';
           department = data['department'] ?? '';
           level = data['level'] ?? '';
           section = data['section'] ?? '';
@@ -60,69 +64,76 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = _isDarkTheme;
+
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : creamWhite,
       appBar: AppBar(
         title: const Text('My Profile'),
-        backgroundColor: Colors.pink[700],
+        centerTitle: true,
+        backgroundColor: chocolateBrown,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: "Toggle Theme",
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              setState(() {
+                _isDarkTheme = !_isDarkTheme;
+              });
+            },
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // 🔷 Gradient Header with Avatar and Name
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF43C6AC), Color(0xFF191654)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      const CircleAvatar(
-                        radius: 50,
-                        backgroundImage: AssetImage('assets/user.png'),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        userType.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 24),
+                CircleAvatar(
+                  radius: 60,
+                  backgroundColor: chocolateBrown,
+                  backgroundImage: const AssetImage('assets/user.png'),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                    fontFamily: 'Sans',
                   ),
                 ),
-
+                Text(
+                  userType.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: chocolateBrown.withOpacity(0.85),
+                    fontFamily: 'Sans',
+                  ),
+                ),
                 const SizedBox(height: 16),
-
-                // 📋 Profile Details Cards
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
-                      _buildInfoCard(Icons.perm_identity, "MIST Roll", roll),
-                      _buildInfoCard(Icons.apartment, "Department", department),
-                      _buildInfoCard(Icons.grade, "Level", level),
-                      _buildInfoCard(Icons.group, "Section", section),
-                      _buildInfoCard(Icons.phone, "Mobile", mobile),
-                      _buildInfoCard(Icons.email, "Email", email),
+                      _buildCardTile(
+                        Icons.badge,
+                        "MIST Roll",
+                        mistRoll,
+                        isDark,
+                      ),
+                      _buildCardTile(
+                        Icons.apartment,
+                        "Department",
+                        department,
+                        isDark,
+                      ),
+                      _buildCardTile(Icons.grade, "Level", level, isDark),
+                      _buildCardTile(Icons.group, "Section", section, isDark),
+                      _buildCardTile(Icons.phone, "Mobile", mobile, isDark),
+                      _buildCardTile(Icons.email, "Email", email, isDark),
                     ],
                   ),
                 ),
@@ -131,15 +142,35 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
     );
   }
 
-  Widget _buildInfoCard(IconData icon, String title, String value) {
+  Widget _buildCardTile(
+    IconData icon,
+    String title,
+    String value,
+    bool isDark,
+  ) {
     return Card(
-      elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      shadowColor: Colors.brown.shade100,
+      color: isDark ? const Color(0xFF2B2B2B) : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
-        leading: Icon(icon, color: Colors.pink[700]),
-        title: Text(title),
-        subtitle: Text(value.isNotEmpty ? value : 'N/A'),
+        leading: Icon(icon, color: chocolateBrown),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Sans',
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        subtitle: Text(
+          value.isNotEmpty ? value : 'N/A',
+          style: TextStyle(
+            fontFamily: 'Sans',
+            color: isDark ? Colors.grey[300] : Colors.grey[800],
+          ),
+        ),
       ),
     );
   }
