@@ -4,6 +4,8 @@ import 'assign_complaints_page.dart';
 import 'manage_teams_page.dart';
 import 'manage_announcements_page.dart';
 import 'cr_list_page.dart';
+import 'guest_sessions_page.dart';
+import 'admin_summary_page.dart';
 
 
 class AdminPanel extends StatelessWidget {
@@ -137,6 +139,28 @@ class AdminPanel extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ManageAnnouncementsPage()),
+                );
+              },
+            ),
+            _buildAdminPanelCard(
+              context,
+              icon: Icons.lock_open,
+              title: 'Guest Sessions',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const GuestSessionsPage()),
+                );
+              },
+            ),
+            _buildAdminPanelCard(
+              context,
+              icon: Icons.bar_chart,
+              title: 'Summary',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminSummaryPage()),
                 );
               },
             ),
