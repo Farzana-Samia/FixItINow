@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'posted_announcement.dart';
+import 'create_announcement.dart';
 
 class ManageAnnouncementsPage extends StatelessWidget {
   const ManageAnnouncementsPage({super.key});
@@ -20,9 +22,9 @@ class ManageAnnouncementsPage extends StatelessWidget {
               icon: Icons.add_box,
               title: 'Create Announcement',
               onTap: () {
-                print('Create Announcement tapped');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Navigate to Create Announcement')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CreateAnnouncementPage()),
                 );
               },
             ),
@@ -30,9 +32,9 @@ class ManageAnnouncementsPage extends StatelessWidget {
               icon: Icons.list_alt,
               title: 'Posted Announcements',
               onTap: () {
-                print('Posted Announcements tapped');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Navigate to Posted Announcements')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PostedAnnouncementsScreen()),
                 );
               },
             ),
