@@ -26,7 +26,9 @@ class AnnouncementScreen extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No announcements available."));
+            return const Center(
+              child: Text("No announcements available for now."),
+            );
           }
 
           final filtered = snapshot.data!.docs.where((doc) {
