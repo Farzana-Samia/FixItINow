@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_fix_it_now/screens/complaint_electrician_mritteka.dart';
+
+
+
 import 'package:flutter_fix_it_now/screens/notification_mritteka.dart';
 import 'package:flutter_fix_it_now/screens/announcement-team-page.dart';
 import 'package:flutter_fix_it_now/screens/log_in_team_mritteka.dart';
+
 import 'package:flutter_fix_it_now/screens/project-team-stats.dart';
 import 'package:flutter_fix_it_now/screens/complaint_page1.dart';
 import 'package:flutter_fix_it_now/profile_team.dart'; // Make sure this file contains ProfileTeam widget
+
 
 class ComplaintElectricianMritteka extends StatefulWidget {
   const ComplaintElectricianMritteka({super.key});
@@ -19,7 +24,9 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
   final List<Map<String, dynamic>> complaints = [
     {
       'id': 'U101',
+
       'crName': 'Mritteka',
+
       'tower': 'Tower 3',
       'room': '305',
       'short': 'Fan not working',
@@ -29,15 +36,18 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
     },
     {
       'id': 'U102',
-      'crName': 'Shila',
-      'tower': 'Tower 2',
-      'room': '108',
-      'short': 'Switch sparks',
-      'description': 'The switch near the bed sparks when used. It’s dangerous.',
-      'status': 'Completed',
-      'imageUrl': null,
+
+      'crName': 'Samia',
+      'tower': 'Tower 1',
+      'room': '212',
+      'short': 'Light flickering',
+      'description': 'The bathroom light is flickering continuously and might burst.',
+      'status': 'In Progress',
+      'imageUrl': 'assets/image/broken.jpg',
+
     },
     {
+
       'id': 'U104',
       'crName': 'Shila',
       'tower': 'Tower 4',
@@ -55,12 +65,16 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
       'short': 'fan is not working',
       'description': '.',
       'status': 'Completed',
+
+      'status': 'Resolved',
+
       'imageUrl': null,
     },
   ];
 
   String selectedFilter = 'All';
   String sortBy = 'ID';
+
 
   final List<String> statuses = ['Pending', 'On Going', 'Completed'];
 
@@ -103,6 +117,7 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
               decoration: BoxDecoration(color: Colors.deepPurple),
               child: Text('Fix It Now', style: TextStyle(color: Colors.white, fontSize: 20)),
             ),
+
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Profile'),
@@ -152,6 +167,32 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
                 );
               },
             ),
+
+            ListTile(leading: const Icon(Icons.report), title: const Text('Complaint'), onTap: () { Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ComplaintElectricianMritteka()),
+            );}),
+
+            ListTile(leading: const Icon(Icons.warning), title: const Text('Announcements'), onTap: () {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PriorityComplaintPage()),
+              );
+            }),
+            ListTile(leading: const Icon(Icons.notifications), title: const Text('Notifications'), onTap: () { Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NotificationPage()),
+            );}),
+
+            ListTile(leading: const Icon(Icons.history), title: const Text('Complaint stats'), onTap: () { Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProjectorTeamStatsPage()),
+
+           
+
+            );}),
+
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),

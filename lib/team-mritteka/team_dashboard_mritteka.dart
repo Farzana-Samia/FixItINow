@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'complaint_electrician_mritteka.dart';
+
 import 'announcement-team-page.dart';
 import 'notification_mritteka.dart';
 import 'project-team-stats.dart';
@@ -125,15 +126,22 @@ class TeamDashboardMritteka extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.warning),
+
               title: const Text('Announcements'),
               onTap: () {
+
                 Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const AnnouncementPage()));
+
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementPage()));
+
               },
             ),
             ListTile(
               leading: const Icon(Icons.notifications),
+ 
               title: const Text('Notifications'),
+
               onTap: () {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const NotificationPage()));
@@ -141,10 +149,16 @@ class TeamDashboardMritteka extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.history),
+
               title: const Text('Complaint History'),
               onTap: () {
+
                 Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const ProjectorTeamStatsPage()));
+
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProjectorTeamStatsPage()));
+
+
               },
             ),
             const Divider(),
@@ -158,6 +172,7 @@ class TeamDashboardMritteka extends StatelessWidget {
           ],
         ),
       ),
+
 
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -183,6 +198,7 @@ class TeamDashboardMritteka extends StatelessWidget {
             _buildGridItem(
               context,
               'Notifications',
+
               Icons.notifications,
               Colors.blue,
               const NotificationPage(),
@@ -193,6 +209,7 @@ class TeamDashboardMritteka extends StatelessWidget {
               Icons.history,
               Colors.green,
               const ProjectorTeamStatsPage(),
+
             ),
           ],
         ),
