@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+
+import 'package:flutter_fix_it_now/screens/complaint_electrician_mritteka.dart';
 import 'package:flutter_fix_it_now/screens/notification_mritteka.dart';
-import 'package:flutter_fix_it_now/screens/priority_mritteka.dart';
+import 'package:flutter_fix_it_now/screens/announcement-team-page.dart';
 import 'package:flutter_fix_it_now/screens/log_in_team_mritteka.dart';
 import 'package:flutter_fix_it_now/screens/project-team-stats.dart';
-
+import 'package:flutter_fix_it_now/screens/complaint_page1.dart';
+import 'package:flutter_fix_it_now/profile_team.dart'; // Make sure this file contains ProfileTeam widget
 
 class ComplaintElectricianMritteka extends StatefulWidget {
   const ComplaintElectricianMritteka({super.key});
@@ -35,19 +38,9 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
       'imageUrl': null,
     },
     {
-      'id': 'U103',
-      'crName': 'Shila',
-      'tower': 'Tower 2',
-      'room': '108',
-      'short': 'Switch sparks',
-      'description': 'The switch near the bed sparks when used. It’s dangerous.',
-      'status': 'Completed',
-      'imageUrl': null,
-    },
-    {
       'id': 'U104',
       'crName': 'Shila',
-      'tower': 'Tower 2',
+      'tower': 'Tower 4',
       'room': '108',
       'short': 'Switch sparks',
       'description': 'The switch near the bed sparks when used. It’s dangerous.',
@@ -59,51 +52,24 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
       'crName': 'Shila',
       'tower': 'Tower 2',
       'room': '108',
-      'short': 'Switch sparks',
-      'description': 'The switch near the bed sparks when used. It’s dangerous.',
-      'status': 'Completed',
-      'imageUrl': null,
-    },
-
-    {
-      'id': 'U106',
-      'crName': 'Shila',
-      'tower': 'Tower 2',
-      'room': '108',
-      'short': 'Switch sparks',
-      'description': 'The switch near the bed sparks when used. It’s dangerous.',
+      'short': 'fan is not working',
+      'description': '.',
       'status': 'Completed',
       'imageUrl': null,
     },
   ];
 
-  int? selectedIndex;
   String selectedFilter = 'All';
   String sortBy = 'ID';
 
   final List<String> statuses = ['Pending', 'On Going', 'Completed'];
 
-  Color statusColor(String status) {
-    switch (status) {
-      case 'Pending':
-        return Colors.red;
-      case 'On Going':
-        return Colors.orange;
-      case 'Completed':
-        return Colors.green;
-      default:
-        return Colors.black;
-    }
-  }
-
   List<Map<String, dynamic>> get filteredComplaints {
     List<Map<String, dynamic>> filtered = [...complaints];
-
 
     if (selectedFilter != 'All') {
       filtered = filtered.where((c) => c['status'] == selectedFilter).toList();
     }
-
 
     if (sortBy == 'ID') {
       filtered.sort((a, b) => a['id'].compareTo(b['id']));
@@ -137,40 +103,75 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
               decoration: BoxDecoration(color: Colors.deepPurple),
               child: Text('Fix It Now', style: TextStyle(color: Colors.white, fontSize: 20)),
             ),
-            ListTile(leading: const Icon(Icons.report), title: const Text('Complaint'), onTap: () { Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ComplaintElectricianMritteka()),
-            );}),
-            ListTile(leading: const Icon(Icons.warning), title: const Text('Announcements'), onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PriorityComplaintPage()),
-              );
-            }),
-            ListTile(leading: const Icon(Icons.notifications), title: const Text('Notifications'), onTap: () { Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const NotificationPage()),
-            );}),
-            ListTile(leading: const Icon(Icons.history), title: const Text('Complaint stats'), onTap: () { Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProjectorTeamStatsPage()),
-            );}),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const ProfilePage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.report),
+              title: const Text('Complaint'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ComplaintElectricianMritteka()),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.warning),
+              title: const Text('Announcements'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AnnouncementPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notifications'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Complaint stats'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProjectorTeamStatsPage()),
+                );
+              },
+            ),
             const Divider(),
-            ListTile(leading: const Icon(Icons.logout), title: const Text('Logout'), onTap: () { Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LogInTeamMritteka()),
-            );}),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  LogInTeamMritteka()),
+                );
+              },
+            ),
           ],
         ),
       ),
       body: Row(
         children: [
-
           Expanded(
             flex: 4,
             child: Column(
               children: [
-
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Row(
@@ -201,29 +202,30 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
                     ],
                   ),
                 ),
-
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: filteredComplaints.length,
                     itemBuilder: (context, index) {
                       final complaint = filteredComplaints[index];
-                      final isSelected = selectedIndex == index;
 
                       return GestureDetector(
                         onTap: () {
-                          setState(() {
-                            selectedIndex = selectedIndex == index ? null : index;
-                          });
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ComplaintDetailsPage(complaintData: complaint),
+                            ),
+                          );
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           margin: const EdgeInsets.symmetric(vertical: 8),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.white : Colors.deepPurple.shade50,
+                            color: Colors.deepPurple.shade50,
                             border: Border.all(
-                              color: isSelected ? Colors.deepPurple : Colors.deepPurple.shade200,
+                              color: Colors.deepPurple.shade200,
                             ),
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
@@ -234,65 +236,43 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
                               )
                             ],
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.person, size: 18),
-                                  const SizedBox(width: 5),
-                                  Text("User ID: ${complaint['id']}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  DropdownButton<String>(
-                                    value: complaint['status'],
-                                    onChanged: (newStatus) {
-                                      setState(() {
-                                        complaint['status'] = newStatus!;
-                                      });
-                                    },
-                                    items: statuses.map((status) {
-                                      return DropdownMenuItem(
-                                        value: status,
-                                        child: AnimatedSwitcher(
-                                          duration: const Duration(milliseconds: 300),
-                                          transitionBuilder: (child, animation) =>
-                                              FadeTransition(opacity: animation, child: child),
-                                          child: Text(
-                                            status,
-                                            key: ValueKey(status),
-                                            style: TextStyle(
-                                              color: statusColor(status),
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
+                              // Complaint Info (left side)
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Complaint ID: ${complaint['id']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 4),
+                                    Text("Short: ${complaint['short']}"),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              Text("Short: ${complaint['short']}"),
-                              if (isSelected) ...[
-                                const Divider(height: 20),
-                                Text("CR Name: ${complaint['crName']}"),
-                                Text("Tower: ${complaint['tower']}"),
-                                Text("Room: ${complaint['room']}"),
-                                const SizedBox(height: 10),
-                                Text("Details: ${complaint['description']}"),
-                                if (complaint['imageUrl'] != null) ...[
-                                  const SizedBox(height: 10),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      complaint['imageUrl'],
-                                      width: double.infinity,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ]
-                              ],
+
+                              // Status Dropdown (right side)
+                              DropdownButton<String>(
+                                value: complaint['status'],
+                                items: statuses
+                                    .map((status) => DropdownMenuItem(
+                                  value: status,
+                                  child: Text(status),
+                                ))
+                                    .toList(),
+                                onChanged: (String? newStatus) {
+                                  if (newStatus != null) {
+                                    setState(() {
+                                      // Update the status in the original complaints list by finding the index
+                                      final originalIndex = complaints.indexWhere((c) => c['id'] == complaint['id']);
+                                      if (originalIndex != -1) {
+                                        complaints[originalIndex]['status'] = newStatus;
+                                      }
+                                    });
+                                  }
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -303,8 +283,7 @@ class _ComplaintElectricianMrittekaState extends State<ComplaintElectricianMritt
               ],
             ),
           ),
-
-  ]
+        ],
       ),
     );
   }
