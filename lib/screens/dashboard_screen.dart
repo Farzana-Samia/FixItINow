@@ -53,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Logout Confirmation"),
-        content: const Text("Do you really want to logout?"),
+        content: const Text("Do you want to logout now ?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
