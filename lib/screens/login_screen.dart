@@ -67,7 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (userType == 'team') {
         final teamType = data['teamType'];
         if (teamType == null || teamType.toString().isEmpty) {
-          setState(() => _error = 'Team type not found. Contact admin.');
+          setState(
+            () => _error =
+                'Team type is not found. Please contact to your admin.',
+          );
           return;
         }
         Navigator.pushReplacement(
