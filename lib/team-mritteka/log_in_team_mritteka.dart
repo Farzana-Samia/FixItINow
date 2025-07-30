@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-import 'team_dashboard_mritteka.dart'; // Import the target page
+import 'team_dashboard_mritteka.dart';
 import 'registration.dart';
+
 class LogInTeamMritteka extends StatelessWidget {
-  const LogInTeamMritteka({super.key});
+  LogInTeamMritteka({super.key});
+
+  // Add controllers
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +45,7 @@ class LogInTeamMritteka extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               TextField(
+                controller: _usernameController, // ✅ use controller
                 decoration: InputDecoration(
                   hintText: 'Enter email or username',
                   prefixIcon: const Icon(Icons.person, color: Colors.deepPurple),
@@ -49,13 +55,11 @@ class LogInTeamMritteka extends StatelessWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.deepPurple, width: 1),
-
                   ),
                 ),
               ),
 
               const SizedBox(height: 20),
-
 
               Align(
                 alignment: Alignment.centerLeft,
@@ -66,6 +70,7 @@ class LogInTeamMritteka extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               TextField(
+                controller: _passwordController, // optional
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Enter password',
@@ -73,16 +78,12 @@ class LogInTeamMritteka extends StatelessWidget {
                   filled: true,
                   fillColor: const Color(0xFFF5F5F5),
                   contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.deepPurple, width: 1),
-
-
                   ),
                 ),
               ),
-
 
               Align(
                 alignment: Alignment.centerRight,
@@ -97,15 +98,20 @@ class LogInTeamMritteka extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
+                    // ✅ Get username from controller
+                    String userName = _usernameController.text.trim();
+
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const TeamDashboardMritteka()),
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            TeamDashboardMritteka(userName: userName), // ✅ pass value here
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -123,7 +129,6 @@ class LogInTeamMritteka extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-
               Row(
                 children: const [
                   Expanded(child: Divider(thickness: 1)),
@@ -137,20 +142,16 @@ class LogInTeamMritteka extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Signup Button
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: OutlinedButton(
-
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const RegistrationPageMritteka()),
-                      );
-                    },
-
-
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const RegistrationPageMritteka()),
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.deepPurple),
                     shape: RoundedRectangleBorder(
