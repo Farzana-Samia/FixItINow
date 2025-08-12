@@ -40,7 +40,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
               },
               child: const Text('Save Changes'),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.pink,  // button text color
+                foregroundColor: Colors.pink,
               ),
             )
           ],
