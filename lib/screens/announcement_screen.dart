@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class AnnouncementScreen extends StatelessWidget {
-  const AnnouncementScreen({super.key});
+  final String userType; // "admin", "cr", or "team"
+  final String? teamType; // null for CR/admin, otherwise team name
+
+  const AnnouncementScreen({super.key, required this.userType, this.teamType});
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +15,11 @@ class AnnouncementScreen extends StatelessWidget {
         .snapshots();
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F4F0),
       appBar: AppBar(
-        title: const Text("📢 Announcements"),
-        backgroundColor: Colors.pink[700],
+        title: const Text("Important Announcements"),
+        backgroundColor: const Color(0xFF8B5E3C),
+        centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: announcementStream,
@@ -27,46 +32,83 @@ class AnnouncementScreen extends StatelessWidget {
             return const Center(child: Text("No announcements available."));
           }
 
-          final filtered = snapshot.data!.docs.where((doc) {
+          final docs = snapshot.data!.docs;
+
+          final filtered = docs.where((doc) {
             final data = doc.data() as Map<String, dynamic>;
-            final target = (data['target'] ?? '').toString().toUpperCase();
-            return target == 'ALL' || target == 'CR';
+            final target =
+                data['target']?.toString().trim().toUpperCase() ?? 'ALL';
+
+            if (userType == 'admin') return true;
+            if (target == 'ALL') return true;
+            if (userType == 'cr' && target == 'CR') return true;
+            if (userType == 'team') {
+              final team = teamType?.trim().toUpperCase();
+              if (target == 'TEAM' || target == team) return true;
+            }
+
+            return false;
           }).toList();
 
           if (filtered.isEmpty) {
-            return const Center(child: Text("No relevant announcements."));
+            return const Center(
+              child: Text("No relevant announcements found."),
+            );
           }
 
           return ListView.builder(
             itemCount: filtered.length,
             itemBuilder: (context, index) {
-              final data = filtered[index].data() as Map<String, dynamic>;
-              final message = data['message'] ?? 'No message';
-              final target = data['target'] ?? 'Unknown';
-              final timestamp = (data['timestamp'] as Timestamp?)?.toDate();
-              final timeString = timestamp != null
-                  ? '${timestamp.day.toString().padLeft(2, '0')}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.year} '
-                      '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}'
-                  : 'Unknown';
+              final doc = filtered[index];
+              final data = doc.data() as Map<String, dynamic>;
+              final timestamp = data['timestamp'] as Timestamp;
+              final isExpired = data['expired'] == true;
+
+              final textColor = isExpired
+                  ? Colors.grey.withOpacity(0.6)
+                  : Colors.black;
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                elevation: 3,
                 child: ListTile(
                   title: Text(
-                    message,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    data['message'] ?? 'No message',
+                    style: TextStyle(fontSize: 15, color: textColor),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Target: $target"),
-                      Text("Posted on: $timeString"),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Target: ${data['target']}",
+                        style: TextStyle(color: textColor),
+                      ),
+                      Text(
+                        "Posted: ${timestamp.toDate()}",
+                        style: TextStyle(color: textColor),
+                      ),
+                      if (isExpired)
+                        Text(
+                          "Expired",
+                          style: TextStyle(
+                            color: Colors.red[400],
+                            fontSize: 12,
+                          ),
+                        ),
                     ],
                   ),
-                  leading: const Icon(Icons.announcement, color: Colors.pink),
+                  trailing: (userType == 'admin' && !isExpired)
+                      ? IconButton(
+                          icon: const Icon(Icons.cancel, color: Colors.red),
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('announcements')
+                                .doc(doc.id)
+                                .update({'expired': true});
+                          },
+                        )
+                      : null,
                 ),
               );
             },

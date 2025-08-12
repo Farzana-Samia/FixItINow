@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -117,77 +118,140 @@ class _FileComplaintScreenState extends State<FileComplaintScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F4F0), // Cream white
       appBar: AppBar(
-        title: const Text("File Complaint"),
-        backgroundColor: Colors.pink[700],
+        title: const Text(
+          "File Complaint",
+          style: TextStyle(fontFamily: 'Poppins'),
+        ),
+        backgroundColor: const Color(0xFF8B5E3C), // Chocolate brown
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _locationController,
-              decoration: const InputDecoration(
-                labelText: 'Room/Location',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Problem Type / Maintenance Team',
-                border: OutlineInputBorder(),
-              ),
-              value: _selectedTeam,
-              items: _problemTypes
-                  .map(
-                    (team) => DropdownMenuItem(value: team, child: Text(team)),
-                  )
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedTeam = val),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                alignLabelWithHint: true,
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            CheckboxListTile(
-              title: const Text("Mark as Priority"),
-              value: _isPriority,
-              onChanged: (val) => setState(() => _isPriority = val ?? false),
-            ),
-            if (_errorText.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  _errorText,
-                  style: const TextStyle(color: Colors.red),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.65),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF8B5E3C).withOpacity(0.4),
+                  width: 1.5,
                 ),
               ),
-            const SizedBox(height: 10),
-            _isSubmitting
-                ? const CircularProgressIndicator()
-                : ElevatedButton.icon(
-                    icon: const Icon(Icons.send),
-                    label: const Text("Submit Complaint"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink[700],
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 24,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  _buildTextField(_locationController, 'Room and Location'),
+                  const SizedBox(height: 16),
+                  _buildDropdown(),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    _descriptionController,
+                    'Description',
+                    maxLines: 4,
+                  ),
+                  const SizedBox(height: 16),
+                  CheckboxListTile(
+                    title: const Text(
+                      "Mark as Priority",
+                      style: TextStyle(fontFamily: 'Poppins'),
+                    ),
+                    activeColor: const Color(0xFF8B5E3C),
+                    value: _isPriority,
+                    onChanged: (val) =>
+                        setState(() => _isPriority = val ?? false),
+                  ),
+                  if (_errorText.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        _errorText,
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
-                    onPressed: _submitComplaint,
-                  ),
-          ],
+                  const SizedBox(height: 20),
+                  _isSubmitting
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton.icon(
+                          icon: const Icon(Icons.send),
+                          label: const Text("Submit Complaint"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8B5E3C),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                              horizontal: 28,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            textStyle: const TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 16,
+                            ),
+                          ),
+                          onPressed: _submitComplaint,
+                        ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      style: const TextStyle(fontFamily: 'Poppins'),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          color: Color(0xFF8B5E3C),
+          fontFamily: 'Poppins',
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.7),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xFF8B5E3C), width: 2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: 'Problem Type',
+        labelStyle: const TextStyle(
+          color: Color(0xFF8B5E3C),
+          fontFamily: 'Poppins',
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.7),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      value: _selectedTeam,
+      items: _problemTypes
+          .map(
+            (team) => DropdownMenuItem(
+              value: team,
+              child: Text(team, style: const TextStyle(fontFamily: 'Poppins')),
+            ),
+          )
+          .toList(),
+      onChanged: (val) => setState(() => _selectedTeam = val),
     );
   }
 }

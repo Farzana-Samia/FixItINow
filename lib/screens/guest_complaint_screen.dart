@@ -139,8 +139,39 @@ class _GuestComplaintScreenState extends State<GuestComplaintScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // removes back button
         title: const Text("Guest Complaint"),
         backgroundColor: Colors.pink[700],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Confirm Logout"),
+                  content: const Text("Do you want to logout?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Cancel"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // close dialog
+                        Navigator.pop(context); // go back
+                      },
+                      child: const Text(
+                        "Logout",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
       resizeToAvoidBottomInset: true,
       body: SafeArea(

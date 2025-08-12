@@ -1,34 +1,16 @@
 import 'package:flutter/material.dart';
+import 'electrical_details.dart'; // Ensure this file exists
 
 class ManageTeamsPage extends StatelessWidget {
   const ManageTeamsPage({super.key});
 
-  // Updated dummy data for teams to include a complaint count
   final List<Map<String, dynamic>> teams = const [
-    {
-      'name': 'Electrical Team',
-      'total_complaints': 15,
-    },
-    {
-      'name': 'Furniture Team',
-      'total_complaints': 7,
-    },
-    {
-      'name': 'Projector Team',
-      'total_complaints': 3,
-    },
-    {
-      'name': 'Computer Team',
-      'total_complaints': 8,
-    },
-    {
-      'name': 'Plumbing Team',
-      'total_complaints': 12,
-    },
-    {
-      'name': 'Housekeeping Team',
-      'total_complaints': 5,
-    },
+    {'name': 'Electrical Team'},
+    {'name': 'Furniture Team'},
+    {'name': 'Projector Team'},
+    {'name': 'Computer Team'},
+    {'name': 'Plumbing Team'},
+    {'name': 'Housekeeping Team'},
   ];
 
   @override
@@ -41,7 +23,7 @@ class ManageTeamsPage extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Go back to the previous screen
+            Navigator.pop(context);
           },
         ),
       ),
@@ -49,27 +31,34 @@ class ManageTeamsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Two cards per row
-            crossAxisSpacing: 16.0, // Horizontal space between cards
-            mainAxisSpacing: 16.0, // Vertical space between cards
-            childAspectRatio: 0.9, // ✅ Taller cards to avoid overflow
+            crossAxisCount: 2,
+            crossAxisSpacing: 16.0,
+            mainAxisSpacing: 16.0,
+            childAspectRatio: 0.99,
           ),
           itemCount: teams.length,
           itemBuilder: (context, index) {
             final team = teams[index];
             return Card(
-              color: Colors.pink[50], // Light pink background
+              color: Colors.pink[50],
               elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0), // Rounded corners
+                borderRadius: BorderRadius.circular(10.0),
               ),
               child: InkWell(
                 onTap: () {
-                  // TODO: Implement navigation to a specific team's details or complaints
-                  print('Tapped on ${team['name']}');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Viewing details for "${team['name']}"')),
-                  );
+                  if (team['name'] == 'Electrical Team') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ElectricalTeamDetailsPage(),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Details for "${team['name']}" not added yet')),
+                    );
+                  }
                 },
                 borderRadius: BorderRadius.circular(10.0),
                 child: Padding(
@@ -84,15 +73,15 @@ class ManageTeamsPage extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.pink, // Darker pink for text
+                          color: Colors.pink,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Total complaints: ${team['total_complaints']}',
+                      const SizedBox(height: 12),
+                      const Text(
+                        'View Details',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[700],
+                          fontSize: 16,
+                          color: Colors.blueGrey,
                         ),
                       ),
                     ],
