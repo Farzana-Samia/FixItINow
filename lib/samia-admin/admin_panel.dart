@@ -7,6 +7,8 @@ import 'cr_list_page.dart';
 import 'guest_sessions_page.dart';
 import 'admin_summary_page.dart';
 
+import 'admin_profile_page.dart';
+import 'notifications_page.dart';
 
 class AdminPanel extends StatelessWidget {
   const AdminPanel({super.key});
@@ -16,14 +18,13 @@ class AdminPanel extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Panel'),
-        // AppBarTheme in main.dart handles the background and foreground colors.
-        automaticallyImplyLeading: false, // Hide default back button
-        leading: Builder( // Use Builder to get a context that can open the Scaffold's drawer
+        automaticallyImplyLeading: false,
+        leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
-              icon: const Icon(Icons.menu), // Hamburger icon for drawer
+              icon: const Icon(Icons.menu),
               onPressed: () {
-                Scaffold.of(context).openDrawer(); // Opens the drawer
+                Scaffold.of(context).openDrawer();
               },
             );
           },
@@ -33,21 +34,47 @@ class AdminPanel extends StatelessWidget {
             icon: const Icon(Icons.logout),
             tooltip: 'Sign Out',
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Confirm Logout'),
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.pink,  // button text color
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                        );
+                      },
+                      child: const Text('Logout'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.pink,  // button text color
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
+
         ],
       ),
-      drawer: Drawer( // The Drawer widget
+      drawer: Drawer(
         child: ListView(
-          padding: EdgeInsets.zero, // Remove default padding
+          padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.pink, // Drawer header background color
+                color: Colors.pink,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,14 +87,6 @@ class AdminPanel extends StatelessWidget {
                       fontSize: 24,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    '',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -75,19 +94,16 @@ class AdminPanel extends StatelessWidget {
               leading: const Icon(Icons.info),
               title: const Text('About Us'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // FIX: Removed navigation logic. Now it just closes the drawer.
+                Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.contact_mail),
               title: const Text('Contact Us'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // FIX: Removed navigation logic. Now it just closes the drawer.
+                Navigator.pop(context);
               },
             ),
-            // You can add more ListTiles here for other drawer items
           ],
         ),
       ),
@@ -159,8 +175,30 @@ class AdminPanel extends StatelessWidget {
               title: 'Summary',
               onTap: () {
                 Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AdminSummaryPage()),
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminSummaryPage()),
+                );
+              },
+            ),
+            _buildAdminPanelCard(
+              context,
+              icon: Icons.person,
+              title: 'Profile & Settings',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminProfilePage()),
+                );
+              },
+            ),
+            _buildAdminPanelCard(
+              context,
+              icon: Icons.notifications,
+              title: 'Notifications',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationsPage()),
                 );
               },
             ),
