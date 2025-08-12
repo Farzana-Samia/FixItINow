@@ -24,7 +24,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? userName;
 
   final Color backgroundColor = const Color(0xFFF8F4F0);
-  final Color accentColor = const Color(0xFFA67C52);
   final Color cardTextColor = const Color(0xFF6B5E5E);
 
   @override
@@ -52,257 +51,242 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Logout Confirmation"),
-        content: const Text("Do you want to logout now ?"),
+        title: const Text("Logout"),
+        content: const Text("Do you want to logout?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("No"),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,
               );
             },
-            child: const Text("Yes"),
+            child: const Text("Logout"),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _drawerTile(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: accentColor),
-      title: Text(
-        title,
-        style: GoogleFonts.poppins(
-          fontWeight: FontWeight.w500,
-          color: cardTextColor,
-        ),
-      ),
-      onTap: onTap,
-    );
-  }
-
-  Widget _buildGlassCard(
-    String title,
-    IconData icon,
-    String heroTag,
-    VoidCallback onTap,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Hero(
-        tag: heroTag,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: [
-                Colors.white.withOpacity(0.25),
-                Colors.white.withOpacity(0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border.all(
-              color: const Color(0xFF8B5E3C).withOpacity(0.35),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.brown.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(icon, size: 36, color: accentColor),
-                    const SizedBox(height: 12),
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        color: cardTextColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: backgroundColor,
-      drawer: Drawer(
-        backgroundColor: Colors.white,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: accentColor),
-              child: Text(
-                'FixItNow Menu',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            _drawerTile(Icons.home, 'Home', () => Navigator.pop(context)),
-            _drawerTile(Icons.person, 'My Profile', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MyProfileScreen()),
-              );
-            }),
-            _drawerTile(Icons.info_outline, 'About Us', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AboutUsScreen()),
-              );
-            }),
-            _drawerTile(Icons.contact_support, 'Contact Us', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ContactUsScreen()),
-              );
-            }),
-            _drawerTile(Icons.logout, 'Logout', _confirmLogout),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(context),
       appBar: AppBar(
-        elevation: 0,
         backgroundColor: backgroundColor,
-        iconTheme: IconThemeData(color: accentColor),
-        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.brown),
+        elevation: 0,
         title: Text(
           'Dashboard',
-          style: GoogleFonts.poppins(
-            color: cardTextColor,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.lato(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.brown[900],
           ),
         ),
+        centerTitle: true,
         actions: [
           IconButton(icon: const Icon(Icons.logout), onPressed: _confirmLogout),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hi 👋 ${userName ?? ''}',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: accentColor,
-              ),
+      body: _buildDashboardContent(context, screenWidth),
+    );
+  }
+
+  Widget _buildDashboardContent(BuildContext context, double screenWidth) {
+    final List<List<dynamic>> items = [
+      [
+        "My Complaints",
+        Icons.report_problem,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MyComplaintsScreen()),
+        ),
+      ],
+      [
+        "File Complaint",
+        Icons.edit,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const FileComplaintScreen()),
+        ),
+      ],
+      [
+        "Announcements",
+        Icons.announcement,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const AnnouncementScreen(userType: 'cr'),
+          ),
+        ),
+      ],
+      [
+        "Complaint Stats",
+        Icons.bar_chart,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ComplaintStatsScreen()),
+        ),
+      ],
+      [
+        "Notifications",
+        Icons.notifications,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => NotificationsScreen()),
+        ),
+      ],
+    ];
+
+    double aspectRatio = screenWidth < 360
+        ? 0.8
+        : screenWidth < 400
+        ? 1
+        : 1.1;
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Hi 👋 ${userName ?? ''}",
+            style: GoogleFonts.lato(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF8B5E3C),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Welcome back! What do you want to do today?',
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: GridView.count(
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Welcome back! What do you want to do today?",
+            style: GoogleFonts.lato(fontSize: 16, color: cardTextColor),
+          ),
+          const SizedBox(height: 30),
+          Expanded(
+            child: GridView.builder(
+              itemCount: items.length,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildGlassCard(
-                    "My Complaints",
-                    Icons.report,
-                    "complaints",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const MyComplaintsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildGlassCard("File Complaint", Icons.edit, "file", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const FileComplaintScreen(),
-                      ),
-                    );
-                  }),
-                  _buildGlassCard(
-                    "Announcements",
-                    Icons.announcement,
-                    "announcements",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AnnouncementScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildGlassCard(
-                    "Complaint Stats",
-                    Icons.bar_chart,
-                    "stats",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ComplaintStatsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildGlassCard(
-                    "Notifications",
-                    Icons.notifications,
-                    "notif",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => NotificationsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 20,
+                childAspectRatio: aspectRatio,
               ),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return _buildDashboardTile(item[1], item[0], item[2]);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardTile(IconData icon, String title, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFF8B5E3C)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 30, color: const Color(0xFF8B5E3C)),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                softWrap: true,
+                overflow: TextOverflow.visible,
+                style: GoogleFonts.lato(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.w600,
+                  color: cardTextColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Drawer _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: Color(0xFF8B5E3C)),
+            child: Text(
+              'FixItNow Menu',
+              style: GoogleFonts.lato(color: Colors.white, fontSize: 24),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('My Profile'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyProfileScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('About Us'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUsScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.contact_mail),
+            title: const Text('Contact Us'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Logout'),
+            onTap: _confirmLogout,
+          ),
+        ],
       ),
     );
   }

@@ -1,9 +1,11 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class AnnouncementScreen extends StatelessWidget {
-  const AnnouncementScreen({super.key});
+  final String userType; // "admin", "cr", or "team"
+  final String? teamType; // null for CR/admin, otherwise team name
+
+  const AnnouncementScreen({super.key, required this.userType, this.teamType});
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +15,11 @@ class AnnouncementScreen extends StatelessWidget {
         .snapshots();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F4F0), // Cream background
+      backgroundColor: const Color(0xFFF8F4F0),
       appBar: AppBar(
-        title: const Text("📢 Announcements"),
-        backgroundColor: const Color(0xFF8B5E3C), // Chocolate brown
+        title: const Text("Important Announcements"),
+        backgroundColor: const Color(0xFF8B5E3C),
+        centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: announcementStream,
@@ -26,94 +29,86 @@ class AnnouncementScreen extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text("No announcements available for now."),
-            );
+            return const Center(child: Text("No announcements available."));
           }
 
-          final filtered = snapshot.data!.docs.where((doc) {
+          final docs = snapshot.data!.docs;
+
+          final filtered = docs.where((doc) {
             final data = doc.data() as Map<String, dynamic>;
-            final target = (data['target'] ?? '').toString().toUpperCase();
-            return target == 'ALL' || target == 'CR';
+            final target =
+                data['target']?.toString().trim().toUpperCase() ?? 'ALL';
+
+            if (userType == 'admin') return true;
+            if (target == 'ALL') return true;
+            if (userType == 'cr' && target == 'CR') return true;
+            if (userType == 'team') {
+              final team = teamType?.trim().toUpperCase();
+              if (target == 'TEAM' || target == team) return true;
+            }
+
+            return false;
           }).toList();
 
           if (filtered.isEmpty) {
-            return const Center(child: Text("No relevant announcements."));
+            return const Center(
+              child: Text("No relevant announcements found."),
+            );
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(12),
             itemCount: filtered.length,
             itemBuilder: (context, index) {
-              final data = filtered[index].data() as Map<String, dynamic>;
-              final message = data['message'] ?? 'No message';
-              final target = data['target'] ?? 'Unknown';
-              final timestamp = (data['timestamp'] as Timestamp?)?.toDate();
-              final timeString = timestamp != null
-                  ? '${timestamp.day.toString().padLeft(2, '0')}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.year} '
-                        '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}'
-                  : 'Unknown';
+              final doc = filtered[index];
+              final data = doc.data() as Map<String, dynamic>;
+              final timestamp = data['timestamp'] as Timestamp;
+              final isExpired = data['expired'] == true;
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF8B5E3C),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.brown.withOpacity(0.2),
-                            blurRadius: 6,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        leading: const Icon(
-                          Icons.campaign,
-                          color: Color(0xFF8B5E3C),
-                          size: 32,
-                        ),
-                        title: Text(
-                          message,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 6),
-                            Text(
-                              "🎯 Target: $target",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            Text(
-                              "🕒 Posted on: $timeString",
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+              final textColor = isExpired
+                  ? Colors.grey.withOpacity(0.6)
+                  : Colors.black;
+
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                elevation: 3,
+                child: ListTile(
+                  title: Text(
+                    data['message'] ?? 'No message',
+                    style: TextStyle(fontSize: 15, color: textColor),
                   ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text(
+                        "Target: ${data['target']}",
+                        style: TextStyle(color: textColor),
+                      ),
+                      Text(
+                        "Posted: ${timestamp.toDate()}",
+                        style: TextStyle(color: textColor),
+                      ),
+                      if (isExpired)
+                        Text(
+                          "Expired",
+                          style: TextStyle(
+                            color: Colors.red[400],
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
+                  ),
+                  trailing: (userType == 'admin' && !isExpired)
+                      ? IconButton(
+                          icon: const Icon(Icons.cancel, color: Colors.red),
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('announcements')
+                                .doc(doc.id)
+                                .update({'expired': true});
+                          },
+                        )
+                      : null,
                 ),
               );
             },

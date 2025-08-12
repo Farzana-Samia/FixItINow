@@ -144,7 +144,7 @@ class _FileComplaintScreenState extends State<FileComplaintScreen> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  _buildTextField(_locationController, 'Room/Location'),
+                  _buildTextField(_locationController, 'Room and Location'),
                   const SizedBox(height: 16),
                   _buildDropdown(),
                   const SizedBox(height: 16),
@@ -233,7 +233,7 @@ class _FileComplaintScreenState extends State<FileComplaintScreen> {
   Widget _buildDropdown() {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
-        labelText: 'Problem Type / Maintenance Team',
+        labelText: 'Problem Type',
         labelStyle: const TextStyle(
           color: Color(0xFF8B5E3C),
           fontFamily: 'Poppins',

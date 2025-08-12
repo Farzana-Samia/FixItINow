@@ -48,7 +48,7 @@ class GuestSessionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Guest Sessions"),
+        title: const Text("CR Rep Sessions"),
         backgroundColor: Colors.pink[700],
       ),
       body: StreamBuilder<QuerySnapshot>(
