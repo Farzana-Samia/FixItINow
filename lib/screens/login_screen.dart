@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'admin_dashboard_screen.dart';
-import 'team_dashboard_screen.dart';
+//import 'admin_dashboard_screen.dart';
+//import 'team_dashboard_screen.dart';
 import 'dashboard_screen.dart';
 import 'register_screen.dart';
 import 'guest_login_screen.dart';
@@ -39,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (uid == null) {
         setState(() {
           _error = 'Login failed: No UID found';
+          _isLoading = false;
         });
         return;
       }
@@ -47,162 +48,166 @@ class _LoginScreenState extends State<LoginScreen> {
           .collection('user')
           .doc(uid)
           .get();
+
       if (!doc.exists) {
         setState(() {
           _error = 'User data not found in Firestore';
+          _isLoading = false;
         });
         return;
       }
 
-      final data = doc.data()!;
-      final userType = data['userType'] ?? '';
-      final approvedRaw = data['approved'];
-      final approved = approvedRaw == true || approvedRaw == 'true';
+      final data = doc.data();
+      final userType = data?['userType'];
+      final isApproved = data?['isApproved'] ?? true;
 
-      if (userType == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-        );
-      } else if (userType == 'team') {
-        final teamType = data['teamType'];
-        if (teamType == null || teamType.toString().isEmpty) {
-          setState(
-            () => _error =
-                'Team type is not found. Please contact to your admin.',
-          );
+      // if (userType == 'admin') {
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+      //   );
+      // } else if (userType == 'team') {
+      //   final teamType = data?['teamType'];
+      //   if (teamType == null || teamType.toString().isEmpty) {
+      //     setState(() {
+      //       _error = 'Team type not found. Contact admin.';
+      //       _isLoading = false;
+      //     });
+      //     return;
+      //   }
+
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (_) => TeamDashboardScreen(teamName: teamType),
+      //     ),
+      //   );
+      // } else
+      if (userType == 'cr') {
+        if (!isApproved) {
+          setState(() {
+            _error = 'Your account is pending approval.';
+            _isLoading = false;
+          });
           return;
         }
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => TeamDashboardScreen(teamName: teamType),
-          ),
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
         );
-      } else if (userType == 'cr') {
-        if (approved) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
-          );
-        } else {
-          setState(() => _error = 'Your CR account is pending admin approval.');
-        }
       } else {
-        setState(() => _error = 'Invalid role. Contact admin.');
+        setState(() {
+          _error = 'Invalid user role.';
+          _isLoading = false;
+        });
       }
-    } on FirebaseAuthException catch (e) {
-      setState(() => _error = e.message ?? 'Authentication failed');
+    } on FirebaseAuthException catch (_) {
+      setState(() {
+        _error = 'Invalid email or password. Please try again.';
+        _isLoading = false;
+      });
     } catch (e) {
-      setState(() => _error = 'Unexpected error: $e');
-    } finally {
-      setState(() => _isLoading = false);
+      setState(() {
+        _error = 'Login failed. Please try again later.';
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color bgColor = Color(0xFFF8F4F0);
-    const Color accent = Color(0xFFA67C52);
-    const double fieldFontSize = 16;
-    const double labelFontSize = 18;
-
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: const Color(0xFFF8F4F0),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Center(
-                child: Text(
-                  'FixItNow',
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: accent,
-                  ),
+              Text(
+                'FixItNow',
+                style: GoogleFonts.lato(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF8B5E3C),
                 ),
               ),
-              const SizedBox(height: 40),
-
-              // Email
+              const SizedBox(height: 32),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Email",
-                  style: GoogleFonts.poppins(
-                    fontSize: labelFontSize,
-                    color: Colors.brown,
+                  'Email',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: Colors.brown[700],
                   ),
                 ),
               ),
               const SizedBox(height: 6),
-              _buildTextField(emailController, "Enter your email", accent),
-
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'Enter your email',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
-
-              // Password
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Password",
-                  style: GoogleFonts.poppins(
-                    fontSize: labelFontSize,
-                    color: Colors.brown,
+                  'Password',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: Colors.brown[700],
                   ),
                 ),
               ),
               const SizedBox(height: 6),
-              _buildTextField(
-                passwordController,
-                "Enter your password",
-                accent,
-                obscure: true,
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'Enter your password',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                ),
               ),
-
-              const SizedBox(height: 20),
-
+              const SizedBox(height: 12),
               if (_error.isNotEmpty)
                 Text(
                   _error,
-                  style: GoogleFonts.poppins(color: Colors.red.shade700),
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w500,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-
-              const SizedBox(height: 16),
-
-              // Login button
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _loginUser,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: accent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              16,
-                            ), // More rounded
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: Text(
-                          "Login",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-
-              const SizedBox(height: 28),
-
-              // Register + Guest
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _loginUser,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8B5E3C),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  _isLoading ? 'Logging in...' : 'Login',
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -212,13 +217,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: Text(
                   "Don't have an account? Register",
-                  style: GoogleFonts.poppins(
-                    color: Colors.brown.shade600,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
+                  style: GoogleFonts.lato(fontSize: 14),
                 ),
               ),
+              const SizedBox(height: 8),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -227,49 +229,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 },
                 child: Text(
-                  "Continue as Guest",
-                  style: GoogleFonts.poppins(
-                    color: accent,
+                  "Continue as CR Rep",
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: const Color(0xFF8B5E3C),
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
                     decoration: TextDecoration.underline,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
+              const SizedBox(height: 30),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String hint,
-    Color accentColor, {
-    bool obscure = false,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      style: GoogleFonts.poppins(fontSize: 16),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.poppins(color: Colors.grey),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: accentColor.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: accentColor, width: 1.4),
         ),
       ),
     );

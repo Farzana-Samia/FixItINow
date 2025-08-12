@@ -12,7 +12,6 @@ class GuestLoginScreen extends StatefulWidget {
 
 class _GuestLoginScreenState extends State<GuestLoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -26,29 +25,28 @@ class _GuestLoginScreenState extends State<GuestLoginScreen> {
   }
 
   Future<void> _initializeNotification() async {
-    // Notification settings
     const androidSettings = AndroidInitializationSettings(
       '@mipmap/ic_launcher',
     );
     const initSettings = InitializationSettings(android: androidSettings);
     await flutterLocalNotificationsPlugin.initialize(initSettings);
 
-    // ✅ Android 13+ notification permission
     final plugin = flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
 
     if (plugin != null) {
-      final granted = await plugin.requestNotificationsPermission();
-      debugPrint('Notification permission granted: $granted');
+      await plugin.requestNotificationsPermission();
     }
   }
 
   Future<void> _sendOTP() async {
     final phone = _phoneController.text.trim();
-    if (phone.isEmpty || phone.length < 10) {
-      setState(() => _error = 'Enter a valid phone number');
+    final valid = RegExp(r'^(013|014|015|016|017|018|019)\d{8}$');
+
+    if (!valid.hasMatch(phone)) {
+      setState(() => _error = 'Enter valid BD number (e.g. 017XXXXXXXX)');
       return;
     }
 
@@ -59,7 +57,6 @@ class _GuestLoginScreenState extends State<GuestLoginScreen> {
 
     final int generatedOTP = Random().nextInt(900000) + 100000;
 
-    // Show OTP in notification
     await flutterLocalNotificationsPlugin.show(
       0,
       'FixItNow OTP',
@@ -91,35 +88,51 @@ class _GuestLoginScreenState extends State<GuestLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Guest Login"),
-        backgroundColor: Colors.pink[700],
+        title: const Text("CR Rep Login"),
+        backgroundColor: Colors.pink.shade700,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const SizedBox(height: 24),
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Enter Phone Number',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             if (_error.isNotEmpty)
-              Text(_error, style: const TextStyle(color: Colors.red)),
+              Text(
+                _error,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            const SizedBox(height: 16),
             _isLoading
-                ? const CircularProgressIndicator()
+                ? const Center(child: CircularProgressIndicator())
                 : ElevatedButton.icon(
                     onPressed: _sendOTP,
-                    icon: const Icon(Icons.message),
+                    icon: const Icon(Icons.sms),
                     label: const Text("Send OTP"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink[700],
+                      backgroundColor: Colors.pink.shade700,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
+                        horizontal: 30,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
