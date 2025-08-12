@@ -1,150 +1,133 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'complaint_verification_screen.dart';
 
-class NotificationsScreen extends StatelessWidget {
-  NotificationsScreen({super.key});
+class NotificationsScreen extends StatefulWidget {
+  @override
+  _NotificationsScreenState createState() => _NotificationsScreenState();
+}
 
-  final Color backgroundColor = const Color(0xFFF8F4F0);
-  final Color accentColor = const Color(0xFFA67C52);
-  final Color textColor = const Color(0xFF6B5E5E);
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  String currentUserId = '';
 
-  Future<String?> getCurrentCrUid() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return null;
-
-    final crDoc = await FirebaseFirestore.instance
-        .collection('user')
-        .where('email', isEqualTo: currentUser.email)
-        .limit(1)
-        .get();
-
-    if (crDoc.docs.isEmpty) return null;
-    return crDoc.docs.first.id;
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentUser();
   }
 
-  Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-  fetchCrNotifications() async* {
-    final crId = await getCurrentCrUid();
-    if (crId == null) {
-      yield [];
-      return;
-    }
-
-    final snapshots = FirebaseFirestore.instance
-        .collection('notifications')
-        .where('recipientId', isEqualTo: crId)
-        .orderBy('timestamp', descending: true)
-        .snapshots();
-
-    await for (var snap in snapshots) {
-      yield snap.docs;
+  Future<void> _fetchCurrentUser() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        print('DEBUG: No current user found.');
+        return;
+      }
+      print('DEBUG: Current Firebase UID = ${user.uid}');
+      currentUserId = user.uid;
+      setState(() {}); // Rebuild UI now that UID is ready
+    } catch (e) {
+      print('ERROR while fetching current user: $e');
     }
   }
 
-  Future<void> markAsSeen(String docId) async {
-    await FirebaseFirestore.instance
-        .collection('notifications')
-        .doc(docId)
-        .update({'seen': true});
+  Future<void> _markAsSeen(DocumentReference docRef) async {
+    try {
+      await docRef.update({'seen': true});
+      print('DEBUG: Notification marked as seen');
+    } catch (e) {
+      print('ERROR updating seen status: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (currentUserId.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Notifications')),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: accentColor),
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        title: Text(
-          'Notifications',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: textColor,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: StreamBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
-        stream: fetchCrNotifications(),
+      appBar: AppBar(title: Text('Notifications')),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('notifications')
+            .where('recipientId', isEqualTo: currentUserId)
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) {
+            print('ERROR fetching notifications: ${snapshot.error}');
+            return Center(child: Text('Error loading notifications.'));
           }
 
-          final docs = snapshot.data ?? [];
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data!.docs;
           if (docs.isEmpty) {
-            return Center(
-              child: Text(
-                'No notifications yet.',
-                style: GoogleFonts.poppins(color: textColor),
-              ),
-            );
+            return Center(child: Text('No notifications yet.'));
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 10),
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final doc = docs[index];
-              final data = doc.data();
-              final message = data['message'] ?? 'No message';
+              final data = doc.data() as Map<String, dynamic>;
+              final timestamp = (data['timestamp'] as Timestamp).toDate();
+              final formattedTime = DateFormat(
+                'dd/MM/yyyy HH:mm',
+              ).format(timestamp);
+              final message = data['message'] ?? '';
+              final requiresVerification = data['requiresVerification'] == true;
+              final complaintId = data['complaintId'] ?? '';
+              final rejectionReason = data['rejectionReason']; // ✅ NEW FIELD
               final seen = data['seen'] == true;
-              final time = (data['timestamp'] as Timestamp?)?.toDate();
-              final formattedTime = time != null
-                  ? DateFormat.yMMMMd().add_jm().format(time)
-                  : 'No Timestamp';
 
-              if (!seen) {
-                // Mark unseen notification as seen
-                markAsSeen(doc.id);
-              }
-
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: seen ? Colors.white : const Color(0xFFFFF3E0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 4,
-                child: ListTile(
-                  leading: Icon(
-                    seen
-                        ? Icons.notifications_none_outlined
-                        : Icons.notifications_active_outlined,
-                    color: seen ? Colors.grey : Colors.green,
-                  ),
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          message,
-                          style: GoogleFonts.poppins(
-                            color: textColor,
-                            fontWeight: FontWeight.w500,
-                          ),
+              return GestureDetector(
+                onTap: () async {
+                  await _markAsSeen(doc.reference);
+                  if (requiresVerification && complaintId.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ComplaintVerificationScreen(
+                          complaintId: complaintId,
                         ),
                       ),
-                      if (!seen)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 6),
-                          child: Icon(
-                            Icons.circle,
-                            color: Colors.red,
-                            size: 10,
+                    );
+                  }
+                },
+                child: Card(
+                  color: requiresVerification
+                      ? Colors.red.shade50
+                      : Colors.white,
+                  child: ListTile(
+                    leading: Icon(
+                      requiresVerification && !seen
+                          ? Icons.notification_important
+                          : Icons.notifications,
+                      color: requiresVerification && !seen
+                          ? Colors.red
+                          : Colors.grey,
+                    ),
+                    title: Text(message),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(formattedTime),
+                        if (rejectionReason != null &&
+                            rejectionReason.toString().isNotEmpty)
+                          Text(
+                            'Reason for rework: $rejectionReason',
+                            style: TextStyle(color: Colors.red.shade700),
                           ),
-                        ),
-                    ],
-                  ),
-                  subtitle: Text(
-                    'Time: $formattedTime',
-                    style: GoogleFonts.poppins(
-                      color: Colors.grey[600],
-                      fontSize: 13,
+                      ],
                     ),
                   ),
                 ),

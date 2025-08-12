@@ -55,6 +55,133 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
     });
   }
 
+  Widget buildComplaintTile(
+    Map<String, dynamic> data,
+    String status,
+    bool isGuest,
+  ) {
+    final complaintId = data['complaint_id'] ?? 'Unknown';
+    final type = data['problem_type'] ?? '';
+    final location = data['room_location'] ?? data['location'] ?? '';
+    final description = data['description'] ?? '';
+    final assignedTeam = data['assignedTeam'] ?? '';
+    final priority = data['priority'] == true;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 6)],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Complaint ID: $complaintId",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            getStatusIcon(status),
+          ],
+        ),
+        subtitle: Text(
+          "Type: $type\nLocation: $location",
+          style: const TextStyle(height: 1.5),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.info_outline, color: Colors.brown),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text("Complaint Details"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Description: $description"),
+                    Text("Type: $type"),
+                    Text("Location: $location"),
+                    if (priority)
+                      const Text(
+                        "⚠️ Priority",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    if (assignedTeam.isNotEmpty)
+                      Text("Assigned to: $assignedTeam"),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Close"),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget getStatusIcon(String status) {
+    switch (status) {
+      case 'Pending':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.more_horiz, color: Colors.orange),
+            SizedBox(width: 4),
+            Text("Pending", style: TextStyle(color: Colors.orange)),
+          ],
+        );
+      case 'Assigned':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.person_add_alt, color: Colors.blue),
+            SizedBox(width: 4),
+            Text("Assigned", style: TextStyle(color: Colors.blue)),
+          ],
+        );
+      case 'Ongoing':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.construction, color: Colors.deepOrange),
+            SizedBox(width: 4),
+            Text("Ongoing", style: TextStyle(color: Colors.deepOrange)),
+          ],
+        );
+      case 'Final_Completed':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.verified, color: Colors.green),
+            SizedBox(width: 4),
+            Text("Completed", style: TextStyle(color: Colors.green)),
+          ],
+        );
+      case 'Rework':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.replay_circle_filled, color: Colors.redAccent),
+            SizedBox(width: 4),
+            Text("Rework", style: TextStyle(color: Colors.redAccent)),
+          ],
+        );
+      default:
+        return const SizedBox();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +192,7 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -76,13 +203,16 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   ...crComplaints.map(
-                    (doc) =>
-                        ComplaintCard(data: doc.data() as Map<String, dynamic>),
+                    (doc) => buildComplaintTile(
+                      doc.data() as Map<String, dynamic>,
+                      doc['status'] ?? 'Pending',
+                      false,
+                    ),
                   ),
                   if (guestComplaints.isNotEmpty) ...[
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     Text(
                       'Guest Complaints (Linked) (${guestComplaints.length})',
                       style: const TextStyle(
@@ -90,164 +220,18 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     ...guestComplaints.map(
-                      (doc) => GuestComplaintCard(
-                        data: doc.data() as Map<String, dynamic>,
+                      (doc) => buildComplaintTile(
+                        doc.data() as Map<String, dynamic>,
+                        doc['status'] ?? 'Pending',
+                        true,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-    );
-  }
-}
-
-class ComplaintCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  const ComplaintCard({super.key, required this.data});
-
-  Widget _buildStatusBadge(String status) {
-    String icon = 'submitted.png';
-    Color color = Colors.yellow;
-
-    if (status == 'Assigned') {
-      icon = 'assigned.png';
-      color = Colors.blue;
-    } else if (status == 'Ongoing') {
-      icon = 'ongoing.png';
-      color = Colors.orange;
-    } else if (status == 'Completed') {
-      icon = 'completed.png';
-      color = Colors.green;
-    } else if (status == 'Pending') {
-      icon = 'pending.png';
-      color = Colors.yellow;
-    }
-
-    return Row(
-      children: [
-        Image.asset('assets/images/$icon', height: 18, width: 18),
-        const SizedBox(width: 4),
-        Text(
-          status,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final status = data['status'] ?? 'Pending';
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFFF8F4F0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  "Complaint ID: ${data['complaint_id'] ?? 'N/A'}",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                _buildStatusBadge(status),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(data['description'] ?? ''),
-            const SizedBox(height: 6),
-            Text("📍 Location: ${data['location'] ?? ''}"),
-            Text("🛠️ Type: ${data['problem_type'] ?? ''}"),
-            if (data['priority'] == true)
-              const Text("⚠️ Priority", style: TextStyle(color: Colors.red)),
-            Text(
-              "✅ Assigned to: ${data['assignedTeam'] ?? 'Not assigned'}",
-              style: const TextStyle(color: Colors.blue),
-            ),
-            Text("🕒 Submitted: ${data['timestamp'] ?? ''}"),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class GuestComplaintCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  const GuestComplaintCard({super.key, required this.data});
-
-  Widget _buildStatusBadge(String status) {
-    String icon = 'submitted.png';
-    Color color = Colors.yellow;
-
-    if (status == 'Assigned') {
-      icon = 'assigned.png';
-      color = Colors.blue;
-    } else if (status == 'Ongoing') {
-      icon = 'ongoing.png';
-      color = Colors.orange;
-    } else if (status == 'Completed') {
-      icon = 'completed.png';
-      color = Colors.green;
-    } else if (status == 'Pending') {
-      icon = 'pending.png';
-      color = Colors.yellow;
-    }
-
-    return Row(
-      children: [
-        Image.asset('assets/images/$icon', height: 18, width: 18),
-        const SizedBox(width: 4),
-        Text(
-          status,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final status = data['status'] ?? 'Pending';
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFFF8F4F0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  "Complaint ID: ${data['complaint_id'] ?? 'N/A'}",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                _buildStatusBadge(status),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(data['description'] ?? ''),
-            const SizedBox(height: 6),
-            Text("📍 Location: ${data['location'] ?? ''}"),
-            Text("🛠️ Type: ${data['problem_type'] ?? ''}"),
-            Text("🕒 Submitted: ${data['timestamp'] ?? ''}"),
-          ],
-        ),
-      ),
     );
   }
 }
