@@ -5,18 +5,74 @@ import 'announcement-team-page.dart';
 import 'notification_mritteka.dart';
 import 'project-team-stats.dart';
 import 'log_in_team_mritteka.dart';
-
+import 'package:flutter_fix_it_now/profile_team.dart'; // Ensure ProfilePage exists
 
 class TeamDashboardMritteka extends StatelessWidget {
-  const TeamDashboardMritteka({super.key});
+  final String userName;
+
+  const TeamDashboardMritteka({super.key, required this.userName});
+
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    final bool? result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.deepPurple.shade50,
+          title: const Text(
+            'Are you sure?',
+            style: TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+          content: const Text(
+            'Do you want to log out?',
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.deepPurple,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              ),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) =>  LogInTeamMritteka()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Admin DashBoard for Electrician',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          'Welcome, $userName',
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
         centerTitle: false,
@@ -25,33 +81,47 @@ class TeamDashboardMritteka extends StatelessWidget {
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Log Out',
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LogInTeamMritteka()),
-              );
+              _showLogoutDialog(context);
             },
           ),
         ],
       ),
 
-
       drawer: Drawer(
         child: ListView(
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.deepPurple),
-
-                child: Text(
-                  'Fix It Now',
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
-              
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.deepPurple),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text(
+                    'Fix It Now',
+                    style: TextStyle(color: Colors.white, fontSize: 24),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Welcome, $userName',
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const ProfilePage()));
+              },
             ),
             ListTile(
               leading: const Icon(Icons.report_problem),
               title: const Text('Complaint'),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ComplaintElectricianMritteka()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const ComplaintElectricianMritteka()));
               },
             ),
             ListTile(
@@ -59,6 +129,10 @@ class TeamDashboardMritteka extends StatelessWidget {
 
               title: const Text('Announcements'),
               onTap: () {
+
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const AnnouncementPage()));
+
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementPage()));
 
               },
@@ -69,7 +143,8 @@ class TeamDashboardMritteka extends StatelessWidget {
               title: const Text('Notifications'),
 
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationPage()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const NotificationPage()));
               },
             ),
             ListTile(
@@ -77,7 +152,12 @@ class TeamDashboardMritteka extends StatelessWidget {
 
               title: const Text('Complaint History'),
               onTap: () {
+
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const ProjectorTeamStatsPage()));
+
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ProjectorTeamStatsPage()));
+
 
               },
             ),
@@ -86,10 +166,7 @@ class TeamDashboardMritteka extends StatelessWidget {
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),
               onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LogInTeamMritteka()),
-                );
+                _showLogoutDialog(context);
               },
             ),
           ],
@@ -140,7 +217,8 @@ class TeamDashboardMritteka extends StatelessWidget {
     );
   }
 
-  Widget _buildGridItem(BuildContext context, String title, IconData icon, Color color, Widget page) {
+  Widget _buildGridItem(
+      BuildContext context, String title, IconData icon, Color color, Widget page) {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (_) => page));
@@ -159,7 +237,8 @@ class TeamDashboardMritteka extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 title,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+                style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold, color: color),
                 textAlign: TextAlign.center,
               ),
             ],

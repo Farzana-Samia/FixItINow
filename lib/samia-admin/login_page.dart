@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'register_page.dart';
 import 'admin_panel.dart';
 
 class LoginPage extends StatefulWidget {
@@ -12,21 +14,36 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _login() {
+  void _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (email == 'admin' && password == 'admin') {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Navigate to admin panel if login successful
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AdminPanel()),
       );
-    } else {
+    } on FirebaseAuthException catch (e) {
+      String message = 'Login failed';
+
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Wrong password provided.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid credentials')),
+        SnackBar(content: Text(message)),
       );
     }
   }
+
 
   @override
   void dispose() {
@@ -108,14 +125,17 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  // Future: Registration page can go here
-                  print('Register button pressed');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RegisterPage()),
+                  );
                 },
                 child: const Text(
                   "Don't have an account? Register",
                   style: TextStyle(color: Colors.white70),
                 ),
               ),
+
             ],
           ),
         ),
