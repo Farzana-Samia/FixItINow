@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-//import 'admin_dashboard_screen.dart';
-//import 'team_dashboard_screen.dart';
+import 'admin_dashboard_screen.dart';
+import 'team_dashboard_screen.dart';
 import 'dashboard_screen.dart';
 import 'register_screen.dart';
 import 'guest_login_screen.dart';
@@ -61,29 +61,28 @@ class _LoginScreenState extends State<LoginScreen> {
       final userType = data?['userType'];
       final isApproved = data?['isApproved'] ?? true;
 
-      // if (userType == 'admin') {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-      //   );
-      // } else if (userType == 'team') {
-      //   final teamType = data?['teamType'];
-      //   if (teamType == null || teamType.toString().isEmpty) {
-      //     setState(() {
-      //       _error = 'Team type not found. Contact admin.';
-      //       _isLoading = false;
-      //     });
-      //     return;
-      //   }
+      if (userType == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        );
+      } else if (userType == 'team') {
+        final teamType = data?['teamType'];
+        if (teamType == null || teamType.toString().isEmpty) {
+          setState(() {
+            _error = 'Team type not found. Contact admin.';
+            _isLoading = false;
+          });
+          return;
+        }
 
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (_) => TeamDashboardScreen(teamName: teamType),
-      //     ),
-      //   );
-      // } else
-      if (userType == 'cr') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => TeamDashboardScreen(teamName: teamType),
+          ),
+        );
+      } else if (userType == 'cr') {
         if (!isApproved) {
           setState(() {
             _error = 'Your account is pending approval.';

@@ -159,6 +159,19 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
             Text("Ongoing", style: TextStyle(color: Colors.deepOrange)),
           ],
         );
+      case 'Team_Completed':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.check_circle_outline, color: Colors.amber),
+            const SizedBox(width: 4),
+            const Text(
+              'Team Done',
+              style: TextStyle(color: Colors.amber),
+            ),
+          ],
+        );
+
       case 'Final_Completed':
         return Row(
           mainAxisSize: MainAxisSize.min,
