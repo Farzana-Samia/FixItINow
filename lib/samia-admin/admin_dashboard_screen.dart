@@ -4,12 +4,12 @@ import 'assign_complaint_screen.dart';
 import 'manage_teams_screen.dart';
 import 'admin_cr_list_screen.dart';
 import 'announcement_home_screen.dart';
-import 'guest_session_screen.dart';
+import 'package:fixitnow/screens/guest_session_screen.dart';
 import 'admin_summary_screen.dart';
 import 'admin_recheck_screen.dart';
-import 'contact_us.dart';
-import 'about_us.dart';
-import 'login_screen.dart';
+import 'package:fixitnow/screens/contact_us.dart';
+import 'package:fixitnow/screens/about_us.dart';
+import 'package:fixitnow/screens/login_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
