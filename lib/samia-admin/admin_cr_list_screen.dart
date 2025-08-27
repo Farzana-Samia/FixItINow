@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'cr_profile_screen.dart';
+import 'package:fixitnow/screens/cr_profile_screen.dart';
 
 class AdminCRListScreen extends StatefulWidget {
   const AdminCRListScreen({super.key});
