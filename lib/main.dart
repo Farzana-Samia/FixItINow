@@ -8,7 +8,7 @@ import 'screens/team_dashboard_screen.dart';
 import 'screens/team_notifications_screen.dart';
 import 'screens/team_complaint_details_screen.dart';
 import 'screens/team_announcement_screen.dart';
-import 'screens/announcement_home_screen.dart';
+import 'screens/announcement_screen.dart';
 import 'screens/create_announcement_screen.dart';
 import 'screens/announcement_screen.dart';
 import 'screens/guest_complaint_screen.dart';
