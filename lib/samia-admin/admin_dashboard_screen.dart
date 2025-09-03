@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'assign_complaint_screen.dart';
 import 'manage_teams_screen.dart';
 import 'admin_cr_list_screen.dart';
-import 'announcement_home_screen.dart';
+import 'package:fixitnow/screens/announcement_screen.dart';
 import 'package:fixitnow/screens/guest_session_screen.dart';
 import 'admin_summary_screen.dart';
 import 'admin_recheck_screen.dart';
@@ -82,7 +82,7 @@ class AdminDashboardScreen extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) =>
-                const AnnouncementHomeScreen(userType: 'admin', teamType: null),
+                const AnnouncementScreen(userType: 'admin', teamType: null),
           ),
         ),
       ),
