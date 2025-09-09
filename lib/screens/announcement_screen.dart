@@ -9,7 +9,7 @@ class AnnouncementScreen extends StatelessWidget {
 
   const AnnouncementScreen({super.key, required this.userType, this.teamType});
 
-  // ===== THEME =====
+  // ===== THEME =====  that is on the main
   static const Color kCream = Color(0xFFF8F4F0);
   static const Color kText = Color(0xFF2F2A28);
 

@@ -18,7 +18,7 @@ class _ComplaintStatsScreenState extends State<ComplaintStatsScreen> {
   int completed = 0;
   bool loading = true;
 
-  String filterType = 'month'; // 'day' or 'month'
+  String filterType = 'month'; // 'day' or 'month' select any of them
   DateTime selectedDate = DateTime.now();
 
   final List<String> teamNames = [
