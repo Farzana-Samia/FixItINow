@@ -124,7 +124,7 @@ class _FileComplaintScreenState extends State<FileComplaintScreen> {
           "File Complaint",
           style: TextStyle(fontFamily: 'Poppins'),
         ),
-        backgroundColor: const Color(0xFF8B5E3C), // Chocolate brown
+        backgroundColor: const Color(0xFF8B5E3C), // Chocolate color
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

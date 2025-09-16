@@ -197,61 +197,61 @@ class _TeamComplaintStatsScreenState extends State<TeamComplaintStatsScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
-              children: [
-                const SizedBox(height: 20),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 30),
-
-                // 👇 pie_chart fix: single ash ring when empty, otherwise only non-zero slices
-                PieChart(
-                  dataMap: dataMap,
-                  animationDuration: const Duration(milliseconds: 800),
-                  chartRadius: MediaQuery.of(context).size.width / 2.2,
-                  chartType: ChartType.ring,
-                  ringStrokeWidth: 25,
-                  colorList: colors,
-                  chartValuesOptions: ChartValuesOptions(
-                    showChartValues: hasData, // hide values when empty
-                    showChartValuesInPercentage: hasData,
-                    chartValueStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    showChartValueBackground: false,
-                  ),
-                  legendOptions: const LegendOptions(
-                    legendPosition: LegendPosition.bottom,
-                    showLegends: false,
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-                _buildLegendTile(Colors.blue, 'Assigned ($assigned)'),
-                _buildLegendTile(Colors.orange, 'Ongoing ($ongoing)'),
-                _buildLegendTile(
-                  Colors.teal,
-                  'Team Completed ($teamCompleted)',
-                ),
-                _buildLegendTile(
-                  Colors.green,
-                  'Final Completed ($finalCompleted)',
-                ),
-
-                if (!hasData)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Text(
-                      'No complaints found for this time period.',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ),
-              ],
+        children: [
+          const SizedBox(height: 20),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
             ),
+          ),
+          const SizedBox(height: 30),
+
+          // 👇 pie_chart fix: single ash ring when empty, otherwise only non-zero slices
+          PieChart(
+            dataMap: dataMap,
+            animationDuration: const Duration(milliseconds: 800),
+            chartRadius: MediaQuery.of(context).size.width / 2.2,
+            chartType: ChartType.ring,
+            ringStrokeWidth: 25,
+            colorList: colors,
+            chartValuesOptions: ChartValuesOptions(
+              showChartValues: hasData, // hide values when empty
+              showChartValuesInPercentage: hasData,
+              chartValueStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+              showChartValueBackground: false,
+            ),
+            legendOptions: const LegendOptions(
+              legendPosition: LegendPosition.bottom,
+              showLegends: false,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          _buildLegendTile(Colors.blue, 'Assigned ($assigned)'),
+          _buildLegendTile(Colors.orange, 'Ongoing ($ongoing)'),
+          _buildLegendTile(
+            Colors.teal,
+            'Team Completed ($teamCompleted)',
+          ),
+          _buildLegendTile(
+            Colors.green,
+            'Final Completed ($finalCompleted)',
+          ),
+
+          if (!hasData)
+            const Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Text(
+                'No complaints found for this time period.',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

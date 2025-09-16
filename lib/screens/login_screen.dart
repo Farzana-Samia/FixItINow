@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userType == 'admin') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+         // MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
         );
       } else if (userType == 'team') {
         final teamType = data?['teamType'];

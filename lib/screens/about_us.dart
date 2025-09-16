@@ -27,7 +27,7 @@ class AboutUsScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔶 Centered blur container with content
+          // 🔶 Centered blur container with content more details
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),

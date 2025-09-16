@@ -64,7 +64,7 @@ class _TeamDashboardScreenState extends State<TeamDashboardScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
+            (route) => false,
       );
     }
   }
