@@ -51,10 +51,10 @@ class TeamAnnouncementScreen extends StatelessWidget {
               final formattedTime = ts == null
                   ? 'Unknown Time'
                   : '${ts.day.toString().padLeft(2, '0')}-'
-                        '${ts.month.toString().padLeft(2, '0')}-'
-                        '${ts.year} '
-                        '${ts.hour.toString().padLeft(2, '0')}:'
-                        '${ts.minute.toString().padLeft(2, '0')}';
+                  '${ts.month.toString().padLeft(2, '0')}-'
+                  '${ts.year} '
+                  '${ts.hour.toString().padLeft(2, '0')}:'
+                  '${ts.minute.toString().padLeft(2, '0')}';
 
               return Opacity(
                 opacity: isExpired ? 0.5 : 1.0, // 👈 fade expired rows
@@ -65,8 +65,8 @@ class TeamAnnouncementScreen extends StatelessWidget {
                   ),
                   color: isExpired
                       ? Colors
-                            .green
-                            .shade50 // 👈 subtle green tint for expired
+                      .green
+                      .shade50 // 👈 subtle green tint for expired
                       : Colors.white,
                   child: Padding(
                     padding: const EdgeInsets.all(16),

@@ -10,6 +10,11 @@ class AdminAnnouncementScreen extends StatelessWidget {
         .collection('announcements')
         .orderBy('timestamp', descending: true)
         .snapshots();
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> 3efc857d6e73c6af336db082b9f1de6181b70062
     return Scaffold(
       appBar: AppBar(
         title: const Text("All Announcements"),

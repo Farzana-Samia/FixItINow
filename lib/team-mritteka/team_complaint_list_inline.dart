@@ -62,14 +62,14 @@ class TeamComplaintListInline extends StatelessWidget {
 
               final allDocs = [
                 ...crDocs.map(
-                  (e) => {
+                      (e) => {
                     'data': e.data() as Map<String, dynamic>,
                     'docId': e.id,
                     'type': 'cr_complaints',
                   },
                 ),
                 ...guestDocs.map(
-                  (e) => {
+                      (e) => {
                     'data': e.data() as Map<String, dynamic>,
                     'docId': e.id,
                     'type': 'guest_complaints',
@@ -89,7 +89,7 @@ class TeamComplaintListInline extends StatelessWidget {
                 itemCount: allDocs.length,
                 itemBuilder: (context, index) {
                   final complaint =
-                      allDocs[index]['data'] as Map<String, dynamic>;
+                  allDocs[index]['data'] as Map<String, dynamic>;
                   final docId = allDocs[index]['docId'] as String;
                   final collection = allDocs[index]['type'] as String;
                   final isPriority = complaint['priority'] == true;

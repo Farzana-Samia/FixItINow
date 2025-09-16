@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'assign_complaint_screen.dart';
 import 'manage_teams_screen.dart';
 import 'admin_cr_list_screen.dart';
@@ -39,90 +40,35 @@ class AdminDashboardScreen extends StatelessWidget {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
+            (route) => false,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final items = <_AdminItem>[
-      _AdminItem(
-        title: 'Assign Complaints',
-        icon: Icons.assignment,
-        color: Colors.purple,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AssignComplaintScreen()),
-        ),
-      ),
-      _AdminItem(
-        title: 'Manage Teams',
-        icon: Icons.groups_2,
-        color: Colors.pink,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => ManageTeamsScreen()),
-        ),
-      ),
-      _AdminItem(
-        title: 'CR List',
-        icon: Icons.list,
-        color: Colors.orange,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminCRListScreen()),
-        ),
-      ),
-      _AdminItem(
-        title: 'Announcement',
-        icon: Icons.announcement,
-        color: Colors.teal,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const AnnouncementScreen(userType: 'admin', teamType: null),
-          ),
-        ),
-      ),
-      _AdminItem(
-        title: 'CR Rep Sessions',
-        icon: Icons.person_search,
-        color: Colors.indigo,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const GuestSessionScreen()),
-        ),
-      ),
-      _AdminItem(
-        title: 'Summary',
-        icon: Icons.dashboard_customize,
-        color: Colors.blue,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminSummaryScreen()),
-        ),
-      ),
-      _AdminItem(
-        title: 'Recheck Requests',
-        icon: Icons.replay,
-        color: Colors.deepOrange,
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminRecheckScreen()),
-        ),
-      ),
-    ];
+    const cream = Color(0xFFF8F4F0);
+    const choco = Color(0xFF8B5E3C);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F4F0),
+      backgroundColor: cream,
       appBar: AppBar(
-        title: const Text('Admin Panel'),
-        backgroundColor: Colors.pink[700],
+        backgroundColor: cream,
+        elevation: 0,
+        foregroundColor: choco,
+        title: Text(
+          'Admin Panel',
+          style: const TextStyle(
+            color: choco,
+            fontWeight: FontWeight.w700,
+            fontSize: 24,
+          ),
+        ),
         actions: [
           IconButton(
+            tooltip: 'Sign out',
             icon: const Icon(Icons.logout),
+            color: choco,
             onPressed: () => _signOut(context),
           ),
         ],
@@ -132,7 +78,7 @@ class AdminDashboardScreen extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.pink),
+              decoration: BoxDecoration(color: choco),
               child: Text(
                 'FixItNow Menu',
                 style: TextStyle(color: Colors.white, fontSize: 20),
@@ -173,86 +119,230 @@ class AdminDashboardScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // Force two columns on phones; 3 on larger screens
-          final crossAxisCount = constraints.maxWidth < 900 ? 2 : 3;
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Bigger chocolate greeting banner (CR-sized)
+              const _WelcomeBannerLarge(),
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.0, // keep cards square-ish
-            ),
-            itemBuilder: (context, i) => _DashboardCard(item: items[i]),
-          );
-        },
+              const SizedBox(height: 16),
+
+              // Action tiles
+              _ActionTile(
+                title: 'Assign Complaints',
+                icon: Icons.assignment,
+                gradient: const [Color(0xFF7C4DFF), Color(0xFFB388FF)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AssignComplaintScreen(),
+                  ),
+                ),
+              ),
+              _ActionTile(
+                title: 'Manage Teams',
+                icon: Icons.groups_2,
+                gradient: const [Color(0xFFFF6F91), Color(0xFFFF8E53)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ManageTeamsScreen()),
+                ),
+              ),
+              _ActionTile(
+                title: 'CR List',
+                icon: Icons.list_alt_rounded,
+                gradient: const [Color(0xFFFFB300), Color(0xFFFFD54F)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminCRListScreen()),
+                ),
+              ),
+              _ActionTile(
+                title: 'Announcement',
+                icon: Icons.announcement,
+                gradient: const [Color(0xFF00C6A7), Color(0xFF1DE9B6)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AnnouncementScreen(
+                      userType: 'admin',
+                      teamType: null,
+                    ),
+                  ),
+                ),
+              ),
+              _ActionTile(
+                title: 'CR Rep Sessions',
+                icon: Icons.person_search,
+                gradient: const [Color(0xFF5C6BC0), Color(0xFF8E99F3)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const GuestSessionScreen()),
+                ),
+              ),
+              _ActionTile(
+                title: 'Summary',
+                icon: Icons.dashboard_customize,
+                gradient: const [Color(0xFF29B6F6), Color(0xFF81D4FA)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminSummaryScreen()),
+                ),
+              ),
+              _ActionTile(
+                title: 'Recheck Requests',
+                icon: Icons.replay,
+                gradient: const [Color(0xFFFF7043), Color(0xFFFFA270)],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminRecheckScreen()),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _AdminItem {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  _AdminItem({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-}
-
-class _DashboardCard extends StatelessWidget {
-  final _AdminItem item;
-  const _DashboardCard({required this.item});
+/// Big chocolate banner — sized like the CR tile you shared.
+class _WelcomeBannerLarge extends StatelessWidget {
+  const _WelcomeBannerLarge();
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: item.onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              colors: [item.color.withOpacity(0.6), item.color],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+      padding: const EdgeInsets.fromLTRB(24, 26, 24, 28),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5E3C), Color(0xFF432B11)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // avatar circle with emoji
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.2),
+              border: Border.all(color: Colors.white24),
+            ),
+            alignment: Alignment.center,
+            child: const Text('👋', style: TextStyle(fontSize: 40)),
+          ),
+          const SizedBox(width: 20),
+          // texts
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hi Admin',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    height: 1.05,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Welcome back! What do you want to do today?',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 22,
+                    height: 1.25,
+                  ),
+                ),
+              ],
             ),
           ),
-          padding: const EdgeInsets.all(16),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.title,
+    required this.icon,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: gradient,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: gradient.last.withOpacity(0.25),
+                blurRadius: 10,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+            child: Row(
               children: [
-                Icon(item.icon, size: 40, color: Colors.white),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      item.title,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.visible,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white24, width: 2),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 30),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
+                const Icon(Icons.chevron_right, color: Colors.white, size: 28),
               ],
             ),
           ),

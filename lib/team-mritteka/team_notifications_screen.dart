@@ -60,10 +60,10 @@ class TeamNotificationsScreen extends StatelessWidget {
                   trailing: seen
                       ? null
                       : const Icon(
-                          Icons.brightness_1,
-                          color: Colors.red,
-                          size: 12,
-                        ),
+                    Icons.brightness_1,
+                    color: Colors.red,
+                    size: 12,
+                  ),
                   onTap: () => _markAsSeen(doc.id),
                 ),
               );

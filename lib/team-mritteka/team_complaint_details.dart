@@ -14,10 +14,10 @@ class TeamComplaintDetailsScreen extends StatelessWidget {
   });
 
   Future<void> _updateStatus(
-    BuildContext context,
-    String newStatus,
-    String message,
-  ) async {
+      BuildContext context,
+      String newStatus,
+      String message,
+      ) async {
     try {
       final docRef = FirebaseFirestore.instance
           .collection(collection)

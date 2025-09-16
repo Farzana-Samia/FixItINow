@@ -158,7 +158,7 @@ class _GuestComplaintScreenState extends State<GuestComplaintScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // close dialog
+                        Navigator.pop(context); // close the  dialog
                         Navigator.pop(context); // go back
                       },
                       child: const Text(
