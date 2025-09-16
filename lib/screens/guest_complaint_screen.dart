@@ -140,7 +140,7 @@ class _GuestComplaintScreenState extends State<GuestComplaintScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // removes back button
-        title: const Text("Guest Complaint"),
+        title: const Text("CR Rep Complaint"),
         backgroundColor: Colors.pink[700],
         actions: [
           IconButton(
@@ -158,7 +158,7 @@ class _GuestComplaintScreenState extends State<GuestComplaintScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // close the  dialog
+                        Navigator.pop(context); // close dialog
                         Navigator.pop(context); // go back
                       },
                       child: const Text(

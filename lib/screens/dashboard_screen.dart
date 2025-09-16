@@ -85,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // ======= GREETING HEADER  =======
+  // ======= GREETING HEADER (unchanged) =======
   Widget _greetingHeader() {
     // keep the same size and look as before
     return Container(

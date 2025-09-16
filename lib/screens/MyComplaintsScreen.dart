@@ -5,69 +5,166 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class MyComplaintsScreen extends StatefulWidget {
-  const MyComplaintsScreen({super.key});
+  const MyComplaintsScreen({Key? key}) : super(key: key);
 
   @override
   State<MyComplaintsScreen> createState() => _MyComplaintsScreenState();
 }
 
 class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
-  static const kCream = Color(0xFFF8F4F0);
-  static const kChoco = Color(0xFF8B5E3C);
-
-  String? _uid;
+  // --- DATA (unchanged logic) ---
+  List<DocumentSnapshot> crComplaints = [];
+  List<DocumentSnapshot> guestComplaints = [];
+  bool isLoading = true;
+  String? currentMistRoll;
 
   @override
   void initState() {
     super.initState();
-    _uid = FirebaseAuth.instance.currentUser?.uid;
+    fetchComplaints();
   }
 
-  // ---------- STATUS DECOR ----------
+  Future<void> fetchComplaints() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final crSnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .where('email', isEqualTo: user.email)
+        .where('userType', isEqualTo: 'cr')
+        .get();
+
+    if (crSnapshot.docs.isEmpty) {
+      setState(() => isLoading = false);
+      return;
+    }
+
+    currentMistRoll = crSnapshot.docs.first['mist_roll'];
+
+    final crComplaintSnapshot = await FirebaseFirestore.instance
+        .collection('cr_complaints')
+        .where('mist_roll', isEqualTo: currentMistRoll)
+        .get();
+
+    final guestComplaintSnapshot = await FirebaseFirestore.instance
+        .collection('guest_complaints')
+        .where('linked_cr_roll', isEqualTo: currentMistRoll)
+        .get();
+
+    // ---- NEW: sort by numeric part of complaint_id (desc) ----
+    int _extractId(DocumentSnapshot doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      final raw = (data['complaint_id'] ?? data['complaintId'] ?? '')
+          .toString();
+      final m = RegExp(r'\d+').firstMatch(raw);
+      return int.tryParse(m?.group(0) ?? '0') ?? 0;
+    }
+
+    final sortedCr = [...crComplaintSnapshot.docs]
+      ..sort((a, b) => _extractId(b).compareTo(_extractId(a)));
+    final sortedGuest = [...guestComplaintSnapshot.docs]
+      ..sort((a, b) => _extractId(b).compareTo(_extractId(a)));
+    // ----------------------------------------------------------
+
+    setState(() {
+      crComplaints = sortedCr;
+      guestComplaints = sortedGuest;
+      isLoading = false;
+    });
+  }
+
+  // ---------- STATUS DECOR (fix: team_completed handled first) ----------
   IconData _statusIcon(String s) {
-    s = s.toLowerCase();
-    if (s.contains('completed')) return Icons.verified_rounded;
-    if (s.contains('ongoing') || s.contains('progress'))
+    final x = s.trim().toLowerCase().replaceAll(' ', '_');
+    if (x.contains('team_completed'))
+      return Icons.check_circle_outline_rounded; // amber
+    if (x.contains('final_completed') ||
+        x == 'completed' ||
+        (x.contains('final') && x.contains('completed'))) {
+      return Icons.verified_rounded; // green
+    }
+    if (x.contains('ongoing') ||
+        x.contains('in_progress') ||
+        x.contains('working')) {
       return Icons.autorenew_rounded;
-    if (s.contains('assigned')) return Icons.person_add_alt_1_rounded;
-    if (s.contains('rework')) return Icons.restart_alt_rounded;
+    }
+    if (x.contains('assigned') || x.contains('team_assigned')) {
+      return Icons.person_add_alt_1_rounded;
+    }
+    if (x.contains('rework')) return Icons.restart_alt_rounded;
     return Icons.more_horiz_rounded; // pending/others
   }
 
   Color _statusColor(String s) {
-    s = s.toLowerCase();
-    if (s.contains('completed')) return const Color(0xFF1DB954);
-    if (s.contains('ongoing') || s.contains('progress'))
+    final x = s.trim().toLowerCase().replaceAll(' ', '_');
+    if (x.contains('team_completed')) return const Color(0xFFFFC107); // amber
+    if (x.contains('final_completed') ||
+        x == 'completed' ||
+        (x.contains('final') && x.contains('completed'))) {
+      return const Color(0xFF1DB954); // green
+    }
+    if (x.contains('ongoing') ||
+        x.contains('in_progress') ||
+        x.contains('working'))
       return const Color(0xFF7C4DFF);
-    if (s.contains('assigned')) return const Color(0xFF1C99D3);
-    if (s.contains('rework')) return const Color(0xFFE53935);
+    if (x.contains('assigned') || x.contains('team_assigned'))
+      return const Color(0xFF1C99D3);
+    if (x.contains('rework')) return const Color(0xFFE53935);
     return const Color(0xFFFF8C00); // pending
   }
 
   String _statusLabel(String s) {
-    s = s.toLowerCase();
-    if (s.contains('completed')) return 'Completed';
-    if (s.contains('ongoing') || s.contains('progress')) return 'Ongoing';
-    if (s.contains('assigned')) return 'Assigned';
-    if (s.contains('rework')) return 'Rework';
+    final x = s.trim().toLowerCase().replaceAll(' ', '_');
+    if (x.contains('team_completed')) return 'Team Done';
+    if (x.contains('final_completed') ||
+        x == 'completed' ||
+        (x.contains('final') && x.contains('completed'))) {
+      return 'Completed';
+    }
+    if (x.contains('ongoing') ||
+        x.contains('in_progress') ||
+        x.contains('working'))
+      return 'Ongoing';
+    if (x.contains('assigned') || x.contains('team_assigned'))
+      return 'Assigned';
+    if (x.contains('rework')) return 'Rework';
     return 'Pending';
   }
 
-  // ---------- DETAIL SHEET ----------
+  DateTime? _pickUpdated(Map<String, dynamic> d) {
+    // try common timestamp fields (convert if present)
+    for (final k in [
+      'updated_at',
+      'lastUpdated',
+      'submitted_at',
+      'timestamp',
+    ]) {
+      final v = d[k];
+      if (v is Timestamp) return v.toDate();
+      if (v is DateTime) return v;
+    }
+    return null;
+  }
+
+  // --- DETAILS SHEET ---
   void _showDetails(Map<String, dynamic> d) {
-    final String cid = (d['complaint_id'] ?? d['complaintId'] ?? '')
+    final String complaintId = (d['complaint_id'] ?? d['complaintId'] ?? '')
         .toString()
         .trim();
-    final String displayId = cid.isEmpty ? '—' : cid;
+    final String displayId = complaintId.isEmpty ? '—' : complaintId;
+
+    final String status = (d['status'] ?? '').toString();
+    final bool priority = (d['priority'] as bool?) ?? false;
+
     final String type = (d['problem_type'] ?? d['type'] ?? 'Unknown')
         .toString();
-    final String loc = (d['room_location'] ?? d['location'] ?? '—').toString();
-    final bool priority = (d['priority'] as bool?) ?? false;
-    final String status = (d['status'] ?? '').toString();
+    final String location = (d['room_location'] ?? d['location'] ?? '—')
+        .toString();
     final String assignedTeam = (d['assignedTeam'] ?? '—').toString();
-    final DateTime? updatedAt = (d['updated_at'] is Timestamp)
-        ? (d['updated_at'] as Timestamp).toDate()
-        : null;
+    final String description = (d['description'] ?? '').toString();
+    final DateTime? updatedAt = _pickUpdated(d);
+
+    final Color sc = _statusColor(status);
 
     showModalBottomSheet(
       context: context,
@@ -76,8 +173,8 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
       builder: (_) {
         return DraggableScrollableSheet(
           initialChildSize: 0.55,
-          maxChildSize: 0.9,
           minChildSize: 0.45,
+          maxChildSize: 0.92,
           builder: (_, controller) {
             return Container(
               decoration: const BoxDecoration(
@@ -86,16 +183,13 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
               ),
               child: Column(
                 children: [
-                  // colored header
+                  // Header like screenshot (green when completed)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          _statusColor(status).withOpacity(.95),
-                          _statusColor(status),
-                        ],
+                        colors: [sc.withOpacity(.95), sc],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -119,7 +213,7 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
+                            horizontal: 12,
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
@@ -138,7 +232,7 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                     ),
                   ),
 
-                  // content
+                  // Body
                   Expanded(
                     child: ListView(
                       controller: controller,
@@ -165,7 +259,11 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                             ),
                           ),
                         _infoRow(Icons.category_rounded, 'Type', type),
-                        _infoRow(Icons.location_on_rounded, 'Location', loc),
+                        _infoRow(
+                          Icons.location_on_rounded,
+                          'Location',
+                          location,
+                        ),
                         _infoRow(
                           Icons.groups_2_rounded,
                           'Assigned to',
@@ -181,14 +279,13 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                                 ).format(updatedAt),
                         ),
                         const SizedBox(height: 14),
-                        if (d['description'] != null &&
-                            (d['description'] as String).trim().isNotEmpty)
-                          _longTextBlock('Description', d['description']),
+                        if (description.trim().isNotEmpty)
+                          _longTextBlock('Description', description),
                       ],
                     ),
                   ),
 
-                  // footer button same hue as header
+                  // Footer button (same hue)
                   SafeArea(
                     top: false,
                     child: Padding(
@@ -198,7 +295,7 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                         height: 48,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _statusColor(status),
+                            backgroundColor: sc,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -232,7 +329,7 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: kChoco),
+          Icon(icon, color: const Color(0xFF8B5E3C)),
           const SizedBox(width: 10),
           SizedBox(
             width: 110,
@@ -282,16 +379,17 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
     );
   }
 
-  // ---------- CARD ----------
-  Widget _complaintCard(Map<String, dynamic> d) {
-    final String cid = (d['complaint_id'] ?? d['complaintId'] ?? '')
+  // --- Card for each item (list) ---
+  Widget _complaintCard(Map<String, dynamic> data) {
+    final String cid = (data['complaint_id'] ?? data['complaintId'] ?? '')
         .toString()
         .trim();
     final String displayId = cid.isEmpty ? '—' : cid;
-    final String type = (d['problem_type'] ?? d['type'] ?? 'Unknown')
+    final String type = (data['problem_type'] ?? data['type'] ?? 'Unknown')
         .toString();
-    final String loc = (d['room_location'] ?? d['location'] ?? '—').toString();
-    final String status = (d['status'] ?? '').toString();
+    final String loc = (data['room_location'] ?? data['location'] ?? '—')
+        .toString();
+    final String status = (data['status'] ?? '').toString();
 
     final Color sc = _statusColor(status);
     final String sl = _statusLabel(status);
@@ -324,7 +422,6 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                 ),
               ),
             ),
-            // status chip
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
@@ -373,9 +470,12 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
           ),
         ),
         trailing: IconButton(
-          icon: Icon(Icons.info_outline_rounded, color: kChoco),
-          onPressed: () => _showDetails(d),
           tooltip: 'Details',
+          icon: const Icon(
+            Icons.info_outline_rounded,
+            color: Color(0xFF8B5E3C),
+          ),
+          onPressed: () => _showDetails(data),
         ),
       ),
     );
@@ -384,9 +484,8 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kCream,
+      backgroundColor: const Color(0xFFF8F4F0),
       appBar: AppBar(
-        // premium header bar different from page bg
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -402,81 +501,50 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
         ),
         centerTitle: true,
       ),
-      body: _uid == null
-          ? const Center(child: Text('Not logged in'))
-          : StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('cr_complaints')
-                  .where('userId', isEqualTo: _uid)
-                  .orderBy('updated_at', descending: true)
-                  .snapshots(),
-              builder: (context, snap) {
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (!snap.hasData || snap.data!.docs.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.inbox_rounded,
-                            size: 72,
-                            color: kChoco.withOpacity(.7),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No complaints yet',
-                            style: GoogleFonts.lato(
-                              fontWeight: FontWeight.w800,
-                              color: kChoco,
-                              fontSize: 18,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'When you submit complaints, they will appear here.',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.lato(
-                              color: const Color(0xFF6B5E5E),
-                            ),
-                          ),
-                        ],
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // My complaints (CR)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+                    child: Text(
+                      'My Complaints (${crComplaints.length})',
+                      style: GoogleFonts.lato(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF5A4030),
                       ),
                     ),
-                  );
-                }
+                  ),
+                  ...crComplaints.map(
+                    (doc) => _complaintCard(doc.data() as Map<String, dynamic>),
+                  ),
 
-                final docs = snap.data!.docs;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // count label
+                  // Linked guest complaints (if any)
+                  if (guestComplaints.isNotEmpty) ...[
+                    const SizedBox(height: 16),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
                       child: Text(
-                        'My Complaints (${docs.length})',
+                        'Guest Complaints (Linked) (${guestComplaints.length})',
                         style: GoogleFonts.lato(
-                          fontWeight: FontWeight.w900,
                           fontSize: 18,
+                          fontWeight: FontWeight.w900,
                           color: const Color(0xFF5A4030),
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: docs.length,
-                        itemBuilder: (_, i) {
-                          final d = docs[i].data() as Map<String, dynamic>;
-                          return _complaintCard(d);
-                        },
-                      ),
+                    ...guestComplaints.map(
+                      (doc) =>
+                          _complaintCard(doc.data() as Map<String, dynamic>),
                     ),
                   ],
-                );
-              },
+                ],
+              ),
             ),
     );
   }

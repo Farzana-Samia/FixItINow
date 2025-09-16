@@ -136,6 +136,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               buildField("Email", emailController),
               buildField("Mobile", mobileController),
               buildField("Password", passwordController, obscure: true),
+
+              // --- NEW: single-line consent message (just text) ---
+              const SizedBox(height: 12),
+              const Text(
+                "By tapping Register, I consent to use of my info and it remains private unless required by law.",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 10, color: Colors.black54),
+              ),
+
+              // ----------------------------------------------------
               const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -147,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 onPressed: _loading ? null : _submitForm,
                 child: _loading
-                    ? const CircularProgressIndicator(color:Color(0xFFF8F4F0),)
+                    ? const CircularProgressIndicator(color: Color(0xFFF8F4F0))
                     : const Text("Register"),
               ),
             ],

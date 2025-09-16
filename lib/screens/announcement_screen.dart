@@ -9,7 +9,7 @@ class AnnouncementScreen extends StatelessWidget {
 
   const AnnouncementScreen({super.key, required this.userType, this.teamType});
 
-  // ===== THEME =====  that is on the main
+  // ===== THEME =====
   static const Color kCream = Color(0xFFF8F4F0);
   static const Color kText = Color(0xFF2F2A28);
 
@@ -71,23 +71,29 @@ class AnnouncementScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: kCream,
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          'Important Announcements',
-          style: GoogleFonts.lato(fontWeight: FontWeight.w800),
-        ),
-        // Different color header: magenta gradient
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF593016), Color(0xFF593016)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+
+      // REPLACE ONLY THE appBar: ... IN YOUR Scaffold WITH THIS:
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(120),
+        child: AppBar(
+          backgroundColor: const Color(0xFF8B5E3C),
+          elevation: 0,
+          automaticallyImplyLeading: true,
+          toolbarHeight: 120, // tall bar
+          centerTitle: true, // centered
+          title: const Text(
+            'Important Announcements',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
             ),
           ),
         ),
       ),
+
       body: StreamBuilder<QuerySnapshot>(
         stream: stream,
         builder: (context, snapshot) {

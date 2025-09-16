@@ -27,7 +27,7 @@ class ContactUsScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔶 Blur and content in details
+          // 🔶 Blur and content
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
